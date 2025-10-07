@@ -1,0 +1,38 @@
+# Images Directory
+
+This directory contains placeholder images for the Cooking Recipe website.
+
+## Required Images:
+
+### Hero Section:
+- hero-cooking.jpg (1200x600px) - Main hero image
+
+### Recipe Images:
+- recipe-1.jpg (400x300px) - Phở Bò Hà Nội
+- recipe-2.jpg (400x300px) - Bún Chả Hà Nội  
+- recipe-3.jpg (400x300px) - Cơm Tấm Sài Gòn
+- recipe-4.jpg (400x300px) - Sushi Nhật Bản
+- recipe-5.jpg (400x300px) - Pasta Carbonara
+- recipe-6.jpg (400x300px) - Tiramisu Ý
+
+### About Page:
+- about-mission.jpg (600x400px) - Mission section image
+- about-story.jpg (600x400px) - Story section image
+
+### Team Photos:
+- team-1.jpg (300x300px) - Nguyễn Văn A (CEO)
+- team-2.jpg (300x300px) - Trần Thị B (Head of Content)
+- team-3.jpg (300x300px) - Lê Văn C (Tech Lead)
+
+## Image Guidelines:
+- Use high-quality images with good lighting
+- Ensure images are optimized for web (compressed but not pixelated)
+- Maintain consistent aspect ratios within each category
+- Use images that represent Vietnamese and international cuisine
+- Ensure all images are properly licensed for commercial use
+
+## Recommended Sources:
+- Unsplash (unsplash.com)
+- Pexels (pexels.com)
+- Pixabay (pixabay.com)
+- Or hire a photographer for custom images
