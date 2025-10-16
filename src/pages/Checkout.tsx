@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import PriceButton from '../components/PriceButton'
+import { useNavigate } from 'react-router-dom'
 
 interface CartItem {
   id: number;
@@ -25,7 +24,6 @@ interface CheckoutForm {
 
 function Checkout() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [formData, setFormData] = useState<CheckoutForm>({
     email: '',
