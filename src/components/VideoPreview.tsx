@@ -4,7 +4,6 @@ import YouTubePlayer from './YouTubePlayer'
 interface VideoPreviewProps {
   videoId: string;
   thumbnail?: string;
-  title: string;
   duration?: string;
   className?: string;
   width?: string | number;
@@ -16,7 +15,6 @@ interface VideoPreviewProps {
 const VideoPreview: React.FC<VideoPreviewProps> = ({
   videoId,
   thumbnail,
-  title,
   duration,
   className = '',
   width = '100%',
@@ -36,7 +34,6 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
       <YouTubePlayer
         videoId={videoId}
         thumbnail={thumbnail}
-        title={title}
         width="100%"
         height="100%"
         autoplay={false}

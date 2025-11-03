@@ -71,10 +71,6 @@ function Recipes() {
   return (
     <main>
       <section className="page-header">
-        <div className="container">
-          <h1 className="page-title">Video Recipe Collection</h1>
-          <p className="page-subtitle">Learn cooking from professional chefs with step-by-step video tutorials</p>
-        </div>
       </section>
 
       <section className="search-filter">
@@ -183,7 +179,6 @@ function Recipes() {
                       <VideoPreview
                         videoId={recipe.youtubeVideoId}
                         thumbnail={recipe.videoThumbnail ?? undefined}
-                        title={recipe.title}
                         duration={`${Math.floor(recipe.cookingTime / 60)}:${(recipe.cookingTime % 60).toString().padStart(2, '0')}`}
                         height="200px"
                         onPlay={() => console.log('Playing video:', recipe.id)}

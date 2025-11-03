@@ -108,42 +108,16 @@ function Layout() {
                 Master cooking with our exclusive recipe collection.
               </p>
               <div className="social-links">
-                <a href="#" aria-label="Facebook" className="social-link">
+                <a href="https://www.facebook.com/anhchefvn" aria-label="Facebook" className="social-link" target="_blank" rel="noopener noreferrer">
                   <i className="fab fa-facebook-f"></i>
                 </a>
-                <a href="#" aria-label="Instagram" className="social-link">
-                  <i className="fab fa-instagram"></i>
+                <a href="https://www.tiktok.com/@anhdaubep_vn" aria-label="TikTok" className="social-link" target="_blank" rel="noopener noreferrer">
+                  <i className="fab fa-tiktok"></i>
                 </a>
-                <a href="#" aria-label="Twitter" className="social-link">
-                  <i className="fab fa-twitter"></i>
-                </a>
-                <a href="#" aria-label="YouTube" className="social-link">
+                <a href="https://www.youtube.com/@anhdaubep/videos" aria-label="YouTube" className="social-link" target="_blank" rel="noopener noreferrer">
                   <i className="fab fa-youtube"></i>
                 </a>
-                <a href="#" aria-label="Pinterest" className="social-link">
-                  <i className="fab fa-pinterest"></i>
-                </a>
               </div>
-            </div>
-            
-            <div className="footer-section">
-              <h4 className="footer-title">Quick Links</h4>
-              <ul className="footer-links">
-                <li><NavLink to="/recipes"><i className="fas fa-chevron-right"></i> Browse Recipes</NavLink></li>
-                <li><NavLink to="/about"><i className="fas fa-chevron-right"></i> About Us</NavLink></li>
-                <li><NavLink to="/contact"><i className="fas fa-chevron-right"></i> Contact</NavLink></li>
-                <li><NavLink to="/my-orders"><i className="fas fa-chevron-right"></i> My Orders</NavLink></li>
-              </ul>
-            </div>
-            
-            <div className="footer-section">
-              <h4 className="footer-title">Categories</h4>
-              <ul className="footer-links">
-                <li><a href="/recipes?category=Vietnamese"><i className="fas fa-chevron-right"></i> Vietnamese</a></li>
-                <li><a href="/recipes?category=Japanese"><i className="fas fa-chevron-right"></i> Japanese</a></li>
-                <li><a href="/recipes?category=Italian"><i className="fas fa-chevron-right"></i> Italian</a></li>
-                <li><a href="/recipes?category=Thai"><i className="fas fa-chevron-right"></i> Thai</a></li>
-              </ul>
             </div>
             
             <div className="footer-section">
@@ -151,17 +125,6 @@ function Layout() {
               <p className="newsletter-text">
                 Subscribe to get updates on new recipes and exclusive offers!
               </p>
-              <form className="newsletter-form" onSubmit={(e) => e.preventDefault()}>
-                <input 
-                  type="email" 
-                  placeholder="Your email address" 
-                  className="newsletter-input"
-                  required
-                />
-                <button type="submit" className="newsletter-btn">
-                  <i className="fas fa-paper-plane"></i>
-                </button>
-              </form>
               <div className="footer-badges">
                 <div className="badge-item">
                   <i className="fas fa-shield-alt"></i>
@@ -177,13 +140,6 @@ function Layout() {
           
           <div className="footer-bottom">
             <p>© 2024 Cooking Recipe. All rights reserved.</p>
-            <div className="footer-bottom-links">
-              <a href="#">Privacy Policy</a>
-              <span className="separator">•</span>
-              <a href="#">Terms of Service</a>
-              <span className="separator">•</span>
-              <a href="#">Cookie Policy</a>
-            </div>
           </div>
         </div>
       </footer>

@@ -585,9 +585,8 @@ section {
 }
 
 .page-header {
-  margin-top: 80px;
   padding: var(--spacing-3xl) 0;
-  background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   color: white;
   text-align: center;
 }
@@ -2598,7 +2597,7 @@ section {
 }
 
 .contact-grid {
-  display: grid;
+  display: center;
   grid-template-columns: 1.5fr 1fr;
   gap: var(--spacing-3xl);
 }
@@ -2810,13 +2809,13 @@ section {
   transform: translateY(-2px);
 }
 
-.social-card.instagram {
-  background: #FCEEF5;
-  color: #E4405F;
+.social-card.tiktok {
+  background: #d3d3d3;
+  color: #000000;
 }
 
-.social-card.instagram:hover {
-  background: linear-gradient(135deg, #E4405F 0%, #C13584 100%);
+.social-card.tiktok:hover {
+  background: linear-gradient(135deg, #000000 0%, #000000 100%);
   color: white;
   transform: translateY(-2px);
 }
@@ -2828,17 +2827,6 @@ section {
 
 .social-card.youtube:hover {
   background: #FF0000;
-  color: white;
-  transform: translateY(-2px);
-}
-
-.social-card.twitter {
-  background: #E8F5FD;
-  color: #1DA1F2;
-}
-
-.social-card.twitter:hover {
-  background: #1DA1F2;
   color: white;
   transform: translateY(-2px);
 }
