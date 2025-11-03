@@ -10,6 +10,8 @@ import MyOrders from './pages/MyOrders'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import NotFound from './pages/NotFound'
+import Login from './pages/Login'
+import Register from './pages/Register'
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

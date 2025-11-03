@@ -1,8 +1,29 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { useState } from 'react'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [currentUser, setCurrentUser] = useState<{ name?: string; email?: string } | null>(null)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const raw = localStorage.getItem('user')
+    if (raw) {
+      try { setCurrentUser(JSON.parse(raw)) } catch {}
+    }
+    const handler = () => {
+      const v = localStorage.getItem('user')
+      setCurrentUser(v ? JSON.parse(v) : null)
+    }
+    window.addEventListener('storage', handler)
+    return () => window.removeEventListener('storage', handler)
+  }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    setCurrentUser(null)
+    navigate('/')
+  }
 
   return (
     <div>
@@ -61,22 +82,53 @@ function Layout() {
             </ul>
             
             <div className={`nav-auth ${mobileMenuOpen ? 'mobile-active' : ''}`}>
-              <NavLink 
-                to="/my-orders" 
-                className="btn btn-outline"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <i className="fas fa-shopping-bag"></i> 
-                <span className="hide-sm">My Orders</span>
-              </NavLink>
-              <a href="#" className="btn btn-outline" id="loginBtn">
-                <i className="fas fa-sign-in-alt"></i>
-                <span className="hide-sm">Login</span>
-              </a>
-              <a href="#" className="btn btn-primary" id="registerBtn">
-                <i className="fas fa-user-plus"></i>
-                <span className="hide-sm">Register</span>
-              </a>
+              {currentUser ? (
+                <>
+                  <NavLink 
+                    to="/my-orders" 
+                    className="btn btn-outline"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i className="fas fa-shopping-bag"></i> 
+                    <span className="hide-sm">My Orders</span>
+                  </NavLink>
+                  <div className="btn btn-outline" style={{display:'flex', gap:8, alignItems:'center'}}>
+                    <i className="fas fa-user-circle"></i>
+                    <span className="hide-sm">{currentUser.name || currentUser.email}</span>
+                  </div>
+                  <button className="btn btn-primary" onClick={handleLogout}>
+                    <i className="fas fa-sign-out-alt"></i>
+                    <span className="hide-sm">Logout</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <NavLink 
+                    to="/my-orders" 
+                    className="btn btn-outline"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i className="fas fa-shopping-bag"></i> 
+                    <span className="hide-sm">My Orders</span>
+                  </NavLink>
+                  <NavLink 
+                    to="/login" 
+                    className="btn btn-outline"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i className="fas fa-sign-in-alt"></i>
+                    <span className="hide-sm">Login</span>
+                  </NavLink>
+                  <NavLink 
+                    to="/register" 
+                    className="btn btn-primary"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i className="fas fa-user-plus"></i>
+                    <span className="hide-sm">Register</span>
+                  </NavLink>
+                </>
+              )}
             </div>
             
             <div 

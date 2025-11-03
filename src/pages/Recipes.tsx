@@ -1,6 +1,6 @@
 // React import not required with react-jsx runtime
 import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import VideoPreview from '../components/VideoPreview'
 import PriceButton from '../components/PriceButton'
 import type { Recipe } from '../types/recipe'
@@ -9,6 +9,8 @@ import { fetchRecipes } from '../services/recipes'
 function Recipes() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 3;
   const [filters, setFilters] = useState({
     category: '',
     difficulty: '',
@@ -23,17 +25,51 @@ function Recipes() {
       try {
         const data = await fetchRecipes();
         if (!cancelled) {
-          setRecipes(data);
+          if (Array.isArray(data) && data.length > 0) {
+            setRecipes(data);
+          } else {
+            // Fallback to static featured samples (dev FE seed)
+            const featured: Recipe[] = [
+              { id: 1, title: 'BÚN CHẢ', youtubeVideoId: 'V37douhyx_0', videoThumbnail: 'https://img.youtube.com/vi/V37douhyx_0/maxresdefault.jpg', price: 9.99, isForSale: true, difficulty: 'Medium', cookingTime: 120, servings: 4, category: 'Vietnamese', rating: 4.8, totalRatings: 156, viewCount: 156, purchaseCount: 0, description: 'Traditional Vietnamese grilled pork with vermicelli and herbs' },
+              { id: 2, title: 'CƠM TẤM', youtubeVideoId: 'P50LW8SzfXQ', videoThumbnail: 'https://img.youtube.com/vi/P50LW8SzfXQ/maxresdefault.jpg', price: 9.99, isForSale: true, difficulty: 'Medium', cookingTime: 120, servings: 4, category: 'Vietnamese', rating: 4.9, totalRatings: 320, viewCount: 320, purchaseCount: 0, description: 'Classic broken rice with grilled pork chop and accompaniments' },
+              { id: 3, title: 'GIẢ CẦY', youtubeVideoId: 'S-fBig2UEvA', videoThumbnail: 'https://img.youtube.com/vi/S-fBig2UEvA/maxresdefault.jpg', price: 7.99, isForSale: true, difficulty: 'Medium', cookingTime: 90, servings: 4, category: 'Vietnamese', rating: 4.7, totalRatings: 210, viewCount: 210, purchaseCount: 0, description: 'Vietnamese-style mock dog stew with aromatic spices' },
+              { id: 4, title: 'ẾCH ĐỒNG NƯỚNG NGHỆ', youtubeVideoId: '4BvbfoMT4SA', videoThumbnail: 'https://img.youtube.com/vi/4BvbfoMT4SA/maxresdefault.jpg', price: 4.99, isForSale: true, difficulty: 'Easy', cookingTime: 30, servings: 4, category: 'Vietnamese', rating: 4.6, totalRatings: 145, viewCount: 145, purchaseCount: 0, description: 'Grilled field frog with turmeric, a rustic Vietnamese specialty' },
+              { id: 5, title: 'XỐT CHẤM HẢI SẢN VÀ THỊT NƯỚNG', youtubeVideoId: 'LU6nK8Kn-tE', videoThumbnail: 'https://img.youtube.com/vi/LU6nK8Kn-tE/maxresdefault.jpg', price: 2.99, isForSale: true, difficulty: 'Easy', cookingTime: 20, servings: 4, category: 'Vietnamese', rating: 4.5, totalRatings: 98, viewCount: 98, purchaseCount: 0, description: 'Signature Vietnamese dipping sauce for seafood and BBQ' },
+              { id: 6, title: 'GIÒ HEO CHIÊN MẮM GIÒN TAN', youtubeVideoId: 'eV9U9CVCGlI', videoThumbnail: 'https://img.youtube.com/vi/eV9U9CVCGlI/maxresdefault.jpg', price: 12.99, isForSale: true, difficulty: 'Hard', cookingTime: 180, servings: 4, category: 'Vietnamese', rating: 4.7, totalRatings: 180, viewCount: 180, purchaseCount: 0, description: 'Crispy deep-fried pork knuckle glazed with fish sauce' },
+              { id: 7, title: 'PHỞ BÒ', youtubeVideoId: '6YlPZWMjQCE', videoThumbnail: 'https://img.youtube.com/vi/6YlPZWMjQCE/maxresdefault.jpg', price: 19.99, isForSale: true, difficulty: 'Hard', cookingTime: 300, servings: 4, category: 'Vietnamese', rating: 4.8, totalRatings: 540, viewCount: 540, purchaseCount: 0, description: 'Iconic Vietnamese beef noodle soup with aromatic broth' },
+              { id: 8, title: 'MIẾN LƯƠNG', youtubeVideoId: '86oXUJNszjQ', videoThumbnail: 'https://img.youtube.com/vi/86oXUJNszjQ/maxresdefault.jpg', price: 7.99, isForSale: true, difficulty: 'Medium', cookingTime: 90, servings: 4, category: 'Vietnamese', rating: 4.6, totalRatings: 260, viewCount: 260, purchaseCount: 0, description: 'Vietnamese eel glass noodle soup, rich and flavorful' },
+              { id: 9, title: 'NEM THÍNH', youtubeVideoId: 'CpsqnvGzC-w', videoThumbnail: 'https://img.youtube.com/vi/CpsqnvGzC-w/maxresdefault.jpg', price: 4.99, isForSale: true, difficulty: 'Medium', cookingTime: 90, servings: 4, category: 'Vietnamese', rating: 5.0, totalRatings: 100, viewCount: 100, purchaseCount: 0, description: 'Fermented pork roll with toasted rice powder and herbs' },
+            ];
+            setRecipes(featured);
+          }
         }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('Failed to load recipes', e);
+        // Fallback on error
+        const featured: Recipe[] = [
+          { id: 1, title: 'BÚN CHẢ', youtubeVideoId: 'V37douhyx_0', videoThumbnail: 'https://img.youtube.com/vi/V37douhyx_0/maxresdefault.jpg', price: 9.99, isForSale: true, difficulty: 'Medium', cookingTime: 120, servings: 4, category: 'Vietnamese', rating: 4.8, totalRatings: 156, viewCount: 156, purchaseCount: 0, description: 'Traditional Vietnamese grilled pork with vermicelli and herbs' },
+          { id: 2, title: 'CƠM TẤM', youtubeVideoId: 'P50LW8SzfXQ', videoThumbnail: 'https://img.youtube.com/vi/P50LW8SzfXQ/maxresdefault.jpg', price: 9.99, isForSale: true, difficulty: 'Medium', cookingTime: 120, servings: 4, category: 'Vietnamese', rating: 4.9, totalRatings: 320, viewCount: 320, purchaseCount: 0, description: 'Classic broken rice with grilled pork chop and accompaniments' },
+          { id: 3, title: 'GIẢ CẦY', youtubeVideoId: 'S-fBig2UEvA', videoThumbnail: 'https://img.youtube.com/vi/S-fBig2UEvA/maxresdefault.jpg', price: 7.99, isForSale: true, difficulty: 'Medium', cookingTime: 90, servings: 4, category: 'Vietnamese', rating: 4.7, totalRatings: 210, viewCount: 210, purchaseCount: 0, description: 'Vietnamese-style mock dog stew with aromatic spices' },
+          { id: 4, title: 'ẾCH ĐỒNG NƯỚNG NGHỆ', youtubeVideoId: '4BvbfoMT4SA', videoThumbnail: 'https://img.youtube.com/vi/4BvbfoMT4SA/maxresdefault.jpg', price: 4.99, isForSale: true, difficulty: 'Easy', cookingTime: 30, servings: 4, category: 'Vietnamese', rating: 4.6, totalRatings: 145, viewCount: 145, purchaseCount: 0, description: 'Grilled field frog with turmeric, a rustic Vietnamese specialty' },
+          { id: 5, title: 'XỐT CHẤM HẢI SẢN VÀ THỊT NƯỚNG', youtubeVideoId: 'LU6nK8Kn-tE', videoThumbnail: 'https://img.youtube.com/vi/LU6nK8Kn-tE/maxresdefault.jpg', price: 2.99, isForSale: true, difficulty: 'Easy', cookingTime: 20, servings: 4, category: 'Vietnamese', rating: 4.5, totalRatings: 98, viewCount: 98, purchaseCount: 0, description: 'Signature Vietnamese dipping sauce for seafood and BBQ' },
+          { id: 6, title: 'GIÒ HEO CHIÊN MẮM GIÒN TAN', youtubeVideoId: 'eV9U9CVCGlI', videoThumbnail: 'https://img.youtube.com/vi/eV9U9CVCGlI/maxresdefault.jpg', price: 12.99, isForSale: true, difficulty: 'Hard', cookingTime: 180, servings: 4, category: 'Vietnamese', rating: 4.7, totalRatings: 180, viewCount: 180, purchaseCount: 0, description: 'Crispy deep-fried pork knuckle glazed with fish sauce' },
+          { id: 7, title: 'PHỞ BÒ', youtubeVideoId: '6YlPZWMjQCE', videoThumbnail: 'https://img.youtube.com/vi/6YlPZWMjQCE/maxresdefault.jpg', price: 19.99, isForSale: true, difficulty: 'Hard', cookingTime: 300, servings: 4, category: 'Vietnamese', rating: 4.8, totalRatings: 540, viewCount: 540, purchaseCount: 0, description: 'Iconic Vietnamese beef noodle soup with aromatic broth' },
+          { id: 8, title: 'MIẾN LƯƠNG', youtubeVideoId: '86oXUJNszjQ', videoThumbnail: 'https://img.youtube.com/vi/86oXUJNszjQ/maxresdefault.jpg', price: 7.99, isForSale: true, difficulty: 'Medium', cookingTime: 90, servings: 4, category: 'Vietnamese', rating: 4.6, totalRatings: 260, viewCount: 260, purchaseCount: 0, description: 'Vietnamese eel glass noodle soup, rich and flavorful' },
+          { id: 9, title: 'NEM THÍNH', youtubeVideoId: 'CpsqnvGzC-w', videoThumbnail: 'https://img.youtube.com/vi/CpsqnvGzC-w/maxresdefault.jpg', price: 4.99, isForSale: true, difficulty: 'Medium', cookingTime: 90, servings: 4, category: 'Vietnamese', rating: 5.0, totalRatings: 100, viewCount: 100, purchaseCount: 0, description: 'Fermented pork roll with toasted rice powder and herbs' },
+        ];
+        if (!cancelled) setRecipes(featured);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true };
   }, []);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.category, filters.difficulty, filters.time, filters.sortBy, filters.search]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -68,6 +104,12 @@ function Recipes() {
     }
   });
 
+  const totalPages = Math.max(1, Math.ceil(sortedRecipes.length / pageSize));
+  const paginatedRecipes = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return sortedRecipes.slice(start, start + pageSize);
+  }, [sortedRecipes, currentPage]);
+
   return (
     <main>
       <section className="page-header">
@@ -88,24 +130,6 @@ function Recipes() {
             </div>
           </div>
           <div className="filter-section">
-            <div className="filter-group">
-              <label>Category:</label>
-              <select 
-                className="filter-select"
-                value={filters.category}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
-              >
-                <option value="">All Categories</option>
-                <option value="Vietnamese">Vietnamese</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Italian">Italian</option>
-                <option value="Thai">Thai</option>
-                <option value="French">French</option>
-                <option value="Mexican">Mexican</option>
-                <option value="Chinese">Chinese</option>
-                <option value="Korean">Korean</option>
-              </select>
-            </div>
             <div className="filter-group">
               <label>Difficulty:</label>
               <select 
@@ -162,18 +186,10 @@ function Recipes() {
             <>
               <div className="results-header">
                 <h3>Found {sortedRecipes.length} video recipes</h3>
-                <div className="view-options">
-                  <button className="view-btn active" data-view="grid">
-                    <i className="fas fa-th"></i>
-                  </button>
-                  <button className="view-btn" data-view="list">
-                    <i className="fas fa-list"></i>
-                  </button>
-                </div>
               </div>
               
               <div className="recipes-grid">
-                {sortedRecipes.map((recipe) => (
+                {paginatedRecipes.map((recipe) => (
                   <div className="recipe-card" key={recipe.id}>
                     <div className="recipe-video">
                       <VideoPreview
@@ -192,9 +208,6 @@ function Recipes() {
                       <div className="recipe-actions">
                         <button className="action-btn favorite-btn" data-tooltip="Add to favorites">
                           <i className="far fa-heart"></i>
-                        </button>
-                        <button className="action-btn share-btn" data-tooltip="Share">
-                          <i className="fas fa-share-alt"></i>
                         </button>
                       </div>
                     </div>
@@ -258,17 +271,29 @@ function Recipes() {
               )}
 
               <div className="pagination">
-                <button className="pagination-btn prev" disabled>
+                <button 
+                  className="pagination-btn prev" 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
                   <i className="fas fa-chevron-left"></i> Previous
                 </button>
                 <div className="pagination-numbers">
-                  {[1,2,3,4,5].map(n => (
-                    <button key={n} className={`pagination-number ${n===1? 'active':''}`}>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                    <button 
+                      key={n} 
+                      className={`pagination-number ${n===currentPage? 'active':''}`}
+                      onClick={() => setCurrentPage(n)}
+                    >
                       {n}
                     </button>
                   ))}
                 </div>
-                <button className="pagination-btn next">
+                <button 
+                  className="pagination-btn next"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
                   Next <i className="fas fa-chevron-right"></i>
                 </button>
               </div>

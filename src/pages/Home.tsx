@@ -183,9 +183,6 @@ function Home() {
                     <button className="action-btn favorite-btn" data-tooltip="Add to favorites">
                       <i className="far fa-heart"></i>
                     </button>
-                    <button className="action-btn share-btn" data-tooltip="Share">
-                      <i className="fas fa-share-alt"></i>
-                    </button>
                   </div>
                 </div>
                 <div className="recipe-content">
