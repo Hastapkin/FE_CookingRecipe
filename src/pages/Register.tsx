@@ -15,7 +15,7 @@ function Register() {
     await new Promise(r => setTimeout(r, 800))
     setStatus('success')
     localStorage.setItem('user', JSON.stringify({ name, email }))
-    setTimeout(() => navigate('/'), 800)
+    window.location.href = '/'
   }
 
   const handleGoogle = () => {

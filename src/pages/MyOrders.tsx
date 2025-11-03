@@ -226,11 +226,8 @@ function MyOrders() {
                         to={`/recipe-detail/${order.items[0].recipeId}`}
                         className="btn btn-primary"
                       >
-                        <i className="fas fa-play"></i> Watch All Recipes
+                        <i className="fas fa-play"></i> Watch
                       </Link>
-                      <button className="btn btn-outline">
-                        <i className="fas fa-download"></i> Download Receipt
-                      </button>
                     </div>
                   )}
                   {order.status === 'pending' && (

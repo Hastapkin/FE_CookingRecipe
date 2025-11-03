@@ -16,7 +16,7 @@ function Login() {
     if (email && password) {
       const nameGuess = email.split('@')[0]
       localStorage.setItem('user', JSON.stringify({ name: nameGuess, email }))
-      navigate('/')
+      window.location.href = '/'
     } else {
       setStatus('error')
     }

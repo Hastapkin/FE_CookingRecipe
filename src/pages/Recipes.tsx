@@ -1,5 +1,5 @@
 // React import not required with react-jsx runtime
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import VideoPreview from '../components/VideoPreview'
 import PriceButton from '../components/PriceButton'
@@ -7,6 +7,7 @@ import type { Recipe } from '../types/recipe'
 import { fetchRecipes } from '../services/recipes'
 
 function Recipes() {
+  const navigate = useNavigate();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -251,7 +252,14 @@ function Recipes() {
                           price={recipe.price}
                           isForSale={recipe.isForSale}
                           size="small"
-                          onPurchase={() => console.log('Purchase recipe:', recipe.id)}
+                          onPurchase={() => {
+                            const user = localStorage.getItem('user')
+                            if (user) {
+                              navigate(`/recipe-detail/${recipe.id}?autoplay=1`)
+                            } else {
+                              navigate('/login')
+                            }
+                          }}
                         />
                         <div className="recipe-author">
                           <span className="author-name">by {recipe.createdBy}</span>

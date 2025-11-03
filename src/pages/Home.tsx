@@ -1,10 +1,11 @@
 // React import not required with react-jsx runtime
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import YouTubePlayer from '../components/YouTubePlayer'
 import VideoPreview from '../components/VideoPreview'
 import PriceButton from '../components/PriceButton'
 
 function Home() {
+  const navigate = useNavigate()
   // Sample featured recipes with YouTube videos
   const featuredRecipes = [
     {
@@ -45,84 +46,6 @@ function Home() {
       category: "Vietnamese",
       rating: 4.7,
       totalRatings: 210
-    },
-    {
-      id: 4,
-      title: "ẾCH ĐỒNG NƯỚNG NGHỆ",
-      youtubeVideoId: "4BvbfoMT4SA",
-      price: 4.99,
-      isForSale: true,
-      difficulty: "Easy",
-      cookingTime: 30,
-      servings: 4,
-      category: "Vietnamese",
-      rating: 4.6,
-      totalRatings: 145
-    },
-    {
-      id: 5,
-      title: "XỐT CHẤM HẢI SẢN VÀ THỊT NƯỚNG",
-      youtubeVideoId: "LU6nK8Kn-tE",
-      price: 2.99,
-      isForSale: true,
-      difficulty: "Easy",
-      cookingTime: 20,
-      servings: 4,
-      category: "Vietnamese",
-      rating: 4.5,
-      totalRatings: 98
-    },
-    {
-      id: 6,
-      title: "GIÒ HEO CHIÊN MẮM GIÒN TAN",
-      youtubeVideoId: "eV9U9CVCGlI",
-      price: 12.99,
-      isForSale: true,
-      difficulty: "Hard",
-      cookingTime: 180,
-      servings: 4,
-      category: "Vietnamese",
-      rating: 4.7,
-      totalRatings: 180
-    },
-    {
-      id: 7,
-      title: "PHỞ BÒ",
-      youtubeVideoId: "6YlPZWMjQCE",
-      price: 19.99,
-      isForSale: true,
-      difficulty: "Hard",
-      cookingTime: 300,
-      servings: 4,
-      category: "Vietnamese",
-      rating: 4.8,
-      totalRatings: 540
-    },
-    {
-      id: 8,
-      title: "MIẾN LƯƠNG",
-      youtubeVideoId: "86oXUJNszjQ",
-      price: 7.99,
-      isForSale: true,
-      difficulty: "Medium",
-      cookingTime: 90,
-      servings: 4,
-      category: "Vietnamese",
-      rating: 4.6,
-      totalRatings: 260
-    },
-    {
-      id: 9,
-      title: "NEM THÍNH",
-      youtubeVideoId: "CpsqnvGzC-w",
-      price: 4.99,
-      isForSale: true,
-      difficulty: "Medium",
-      cookingTime: 90,
-      servings: 4,
-      category: "Vietnamese",
-      rating: 5.0,
-      totalRatings: 100
     }
   ];
 
@@ -219,7 +142,14 @@ function Home() {
                       price={recipe.price}
                       isForSale={recipe.isForSale}
                       size="small"
-                      onPurchase={() => console.log('Purchase recipe:', recipe.id)}
+                      onPurchase={() => {
+                        const user = localStorage.getItem('user')
+                        if (user) {
+                          navigate(`/recipe-detail/${recipe.id}?autoplay=1`)
+                        } else {
+                          navigate('/login')
+                        }
+                      }}
                     />
                     <div className="recipe-stats">
                       <span className="view-count">

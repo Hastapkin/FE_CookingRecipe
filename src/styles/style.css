@@ -948,18 +948,16 @@ section {
 }
 
 .recipe-meta {
-    display: flex;
+  display: flex;
   gap: var(--spacing-lg);
-  padding: var(--spacing-md) 0;
   border-top: 1px solid var(--neutral-100);
   border-bottom: 1px solid var(--neutral-100);
-  margin-bottom: var(--spacing-md);
-    flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 .recipe-meta span {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
   gap: var(--spacing-xs);
   font-size: var(--text-sm);
   color: var(--text-secondary);
@@ -1196,7 +1194,6 @@ section {
 }
 
 .recipe-price-section {
-  margin-top: var(--spacing-xl);
   padding: var(--spacing-xl);
   background: linear-gradient(135deg, var(--neutral-50) 0%, var(--bg-primary) 100%);
   border: 2px solid var(--neutral-200);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useLocation } from 'react-router-dom'
 import YouTubePlayer from '../components/YouTubePlayer'
 import PriceButton from '../components/PriceButton'
 import type { Recipe } from '../types/recipe'
@@ -7,10 +7,12 @@ import { fetchRecipeById } from '../services/recipes'
 
 function RecipeDetail() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'ingredients' | 'instructions' | 'nutrition' | 'reviews'>('ingredients');
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPurchased] = useState(false);
+  const autoplay = new URLSearchParams(location.search).get('autoplay') === '1';
 
   useEffect(() => {
     let cancelled = false;
@@ -18,16 +20,138 @@ function RecipeDetail() {
       try {
         if (!id) return;
         const data = await fetchRecipeById(Number(id));
-        if (!cancelled) setRecipe(data);
+        if (!cancelled) {
+          if (data) {
+            setRecipe(data);
+          } else {
+            // Fallback to FE sample data
+            const samples = getSampleRecipes();
+            const found = samples.find(r => r.id === Number(id)) || null;
+            setRecipe(found);
+          }
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('Failed to load recipe', e);
+        // Fallback to FE sample data on error
+        const samples = getSampleRecipes();
+        const found = samples.find(r => r.id === Number(id)) || null;
+        if (!cancelled) setRecipe(found);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true };
   }, [id]);
+
+  function toIngredients(items: string[]) {
+    return items.map(label => ({ label, quantity: 0, measurement: '' })) as NonNullable<Recipe['ingredients']>;
+  }
+
+  function toInstructions(items: string[]) {
+    return items.map((content, idx) => ({ step: idx + 1, content })) as NonNullable<Recipe['instructions']>;
+  }
+
+  function getSampleRecipes() {
+    return [
+      { id: 1, title: 'BÚN CHẢ', youtubeVideoId: 'V37douhyx_0', videoThumbnail: 'https://img.youtube.com/vi/V37douhyx_0/maxresdefault.jpg', price: 9.99, isForSale: true, difficulty: 'Medium', cookingTime: 120, servings: 4, category: 'Vietnamese', rating: 4.8, totalRatings: 156, viewCount: 156, purchaseCount: 0, description: 'Traditional Vietnamese grilled pork with vermicelli and herbs',
+        ingredients: toIngredients([
+          'Pork belly (lean and fat parts)', 'Ground pork (patties)', 'Shallots and garlic', 'Fish sauce', 'Sugar, pepper, oyster sauce', 'Vermicelli noodles (bún)', 'Mixed herbs', 'Pickled green papaya and carrots', 'Dipping sauce: fish sauce, broth, sugar, garlic, chili, lime'
+        ]),
+        instructions: toInstructions([
+          'Slice pork belly; season ground pork with aromatics and sauces; marinate 1 hour',
+          'Shape patties and grill pork belly and patties until golden',
+          'Mix dipping sauce and add pickles',
+          'Serve with bún, herbs, and dipping sauce'
+        ])
+      },
+      { id: 2, title: 'CƠM TẤM', youtubeVideoId: 'P50LW8SzfXQ', videoThumbnail: 'https://img.youtube.com/vi/P50LW8SzfXQ/maxresdefault.jpg', price: 9.99, isForSale: true, difficulty: 'Medium', cookingTime: 120, servings: 4, category: 'Vietnamese', rating: 4.9, totalRatings: 320, viewCount: 320, purchaseCount: 0, description: 'Classic broken rice with grilled pork chop and accompaniments',
+        ingredients: toIngredients([
+          'Broken rice', 'Pork chops', 'Pork skin & pork (bì)', 'Chả trứng (steamed egg meatloaf)', 'Pickled carrot & daikon', 'Cucumber, tomato, herbs', 'Garlic, shallots, fish sauce, oyster sauce, sugar, pepper, honey', 'Mung bean noodles, wood ear mushrooms', 'Sweet fish sauce'
+        ]),
+        instructions: toInstructions([
+          'Cook broken rice with proper water ratio',
+          'Tenderize and marinate pork chops; grill over charcoal',
+          'Make bì: boil skin, slice, toss with pork and toasted rice powder',
+          'Steam chả trứng 25–30m; glaze with yolk',
+          'Mix sweet fish sauce; assemble and serve'
+        ])
+      },
+      { id: 3, title: 'GIẢ CẦY', youtubeVideoId: 'S-fBig2UEvA', videoThumbnail: 'https://img.youtube.com/vi/S-fBig2UEvA/maxresdefault.jpg', price: 7.99, isForSale: true, difficulty: 'Medium', cookingTime: 90, servings: 4, category: 'Vietnamese', rating: 4.7, totalRatings: 210, viewCount: 210, purchaseCount: 0, description: 'Vietnamese-style mock dog stew with aromatic spices',
+        ingredients: toIngredients([
+          'Pork trotters', 'Galangal, lemongrass, garlic, shallots', 'Fermented rice (mẻ), shrimp paste (mắm tôm)', 'Turmeric', 'Fish sauce, salt, MSG, sugar, pepper', 'Water or coconut water', 'Rice noodles'
+        ]),
+        instructions: toInstructions([
+          'Grill trotters lightly; cut to pieces',
+          'Marinate with aromatics, mẻ, mắm tôm, turmeric, fish sauce, seasonings',
+          'Sear marinated pork; add liquid; simmer 45–60m until tender',
+          'Adjust seasoning; serve hot with noodles or rice'
+        ])
+      },
+      { id: 4, title: 'ẾCH ĐỒNG NƯỚNG NGHỆ', youtubeVideoId: '4BvbfoMT4SA', videoThumbnail: 'https://img.youtube.com/vi/4BvbfoMT4SA/maxresdefault.jpg', price: 4.99, isForSale: true, difficulty: 'Easy', cookingTime: 30, servings: 4, category: 'Vietnamese', rating: 4.6, totalRatings: 145, viewCount: 145, purchaseCount: 0, description: 'Grilled field frog with turmeric, a rustic Vietnamese specialty',
+        ingredients: toIngredients([
+          'Frog meat', 'Turmeric', 'Onion, garlic, chili', 'Salt, pepper', 'Cooking oil', 'Optional: fish sauce, oyster sauce, lemongrass'
+        ]),
+        instructions: toInstructions([
+          'Clean and cut frog to bite-size',
+          'Marinate with turmeric, aromatics, and seasonings 20–30m',
+          'Grill over charcoal until cooked and slightly charred',
+          'Serve hot with herbs or dipping sauce'
+        ])
+      },
+      { id: 5, title: 'XỐT CHẤM HẢI SẢN VÀ THỊT NƯỚNG', youtubeVideoId: 'LU6nK8Kn-tE', videoThumbnail: 'https://img.youtube.com/vi/LU6nK8Kn-tE/maxresdefault.jpg', price: 2.99, isForSale: true, difficulty: 'Easy', cookingTime: 20, servings: 4, category: 'Vietnamese', rating: 4.5, totalRatings: 98, viewCount: 98, purchaseCount: 0, description: 'Signature Vietnamese dipping sauce for seafood and BBQ',
+        ingredients: toIngredients([
+          'Green chili seafood sauce: green chilies, bell pepper, lime juice, sugar, salt, lime leaves, condensed milk',
+          'Lime pepper salt: salt, black pepper, lime juice, chili'
+        ]),
+        instructions: toInstructions([
+          'Blend green chili sauce ingredients until smooth; chill 1 hour',
+          'Mix salt, pepper, lime juice, chili for muối tiêu chanh',
+          'Serve with seafood/meats'
+        ])
+      },
+      { id: 6, title: 'GIÒ HEO CHIÊN MẮM GIÒN TAN', youtubeVideoId: 'eV9U9CVCGlI', videoThumbnail: 'https://img.youtube.com/vi/eV9U9CVCGlI/maxresdefault.jpg', price: 12.99, isForSale: true, difficulty: 'Hard', cookingTime: 180, servings: 4, category: 'Vietnamese', rating: 4.7, totalRatings: 180, viewCount: 180, purchaseCount: 0, description: 'Crispy deep-fried pork knuckle glazed with fish sauce',
+        ingredients: toIngredients([
+          'Pork knuckle', 'Salt, pepper, ginger', 'Fish sauce', 'Garlic, shallots, chili, onion', 'Sugar', 'Cooking oil'
+        ]),
+        instructions: toInstructions([
+          'Clean/blanch knuckle; boil until just cooked; ice-bath; dry thoroughly',
+          'Deep-fry until golden and crisp',
+          'Sauté aromatics; make fish sauce-sugar glaze; toss knuckle to coat',
+          'Chop and serve immediately'
+        ])
+      },
+      { id: 7, title: 'PHỞ BÒ', youtubeVideoId: '6YlPZWMjQCE', videoThumbnail: 'https://img.youtube.com/vi/6YlPZWMjQCE/maxresdefault.jpg', price: 19.99, isForSale: true, difficulty: 'Hard', cookingTime: 300, servings: 4, category: 'Vietnamese', rating: 4.8, totalRatings: 540, viewCount: 540, purchaseCount: 0, description: 'Iconic Vietnamese beef noodle soup with aromatic broth',
+        ingredients: toIngredients([
+          'Rice noodles', 'Beef broth (beef bones, cinnamon, star anise, cloves, ginger, onions)', 'Beef cuts (rare slices, brisket, tendon, flank)', 'Scallions, basil, cilantro, sprouts, onion', 'Lime, chili or sauce'
+        ]),
+        instructions: toInstructions([
+          'Simmer beef bones with spices for clear, rich broth',
+          'Prepare noodles and beef cuts; assemble with garnishes',
+          'Season with lime and chili to taste'
+        ])
+      },
+      { id: 8, title: 'MIẾN LƯƠNG', youtubeVideoId: '86oXUJNszjQ', videoThumbnail: 'https://img.youtube.com/vi/86oXUJNszjQ/maxresdefault.jpg', price: 7.99, isForSale: true, difficulty: 'Medium', cookingTime: 90, servings: 4, category: 'Vietnamese', rating: 4.6, totalRatings: 260, viewCount: 260, purchaseCount: 0, description: 'Vietnamese eel glass noodle soup, rich and flavorful',
+        ingredients: toIngredients([
+          'Eel', 'Vermicelli noodles (miến)', 'Kaffir & ginger leaves (steam option)', 'Turmeric, shallots, betel leaves (grill option)', 'Garlic, chili, fish sauce, sugar, salt, pepper', 'Herbs and greens'
+        ]),
+        instructions: toInstructions([
+          'Clean eel; choose fry, steam, or marinate & grill method',
+          'Prepare miến and broth/sauce; assemble with eel and herbs'
+        ])
+      },
+      { id: 9, title: 'NEM THÍNH', youtubeVideoId: 'CpsqnvGzC-w', videoThumbnail: 'https://img.youtube.com/vi/CpsqnvGzC-w/maxresdefault.jpg', price: 4.99, isForSale: true, difficulty: 'Medium', cookingTime: 90, servings: 4, category: 'Vietnamese', rating: 5.0, totalRatings: 100, viewCount: 100, purchaseCount: 0, description: 'Fermented pork roll with toasted rice powder and herbs',
+        ingredients: toIngredients([
+          'Boiled pork (sliced)', 'Pork skin (thinly sliced)', 'Toasted rice powder (thính)', 'Fig leaves, lime leaves, Thai basil, spearmint', 'Fish sauce, garlic, chili (dipping)'
+        ]),
+        instructions: toInstructions([
+          'Boil and slice pork; slice skin',
+          'Coat pork with toasted rice powder',
+          'Serve with fresh herbs and fish sauce-garlic-chili dipping'
+        ])
+      },
+    ] as Recipe[]
+  }
 
   const handlePurchase = () => {
     console.log('Purchasing recipe:', recipe?.id);
@@ -67,14 +191,6 @@ function RecipeDetail() {
     <main>
       <section className="recipe-detail">
         <div className="container">
-          <nav className="breadcrumb">
-            <Link to="/">Home</Link>
-            <span className="separator">/</span>
-            <Link to="/recipes">Recipes</Link>
-            <span className="separator">/</span>
-            <span className="current">{recipe.title}</span>
-          </nav>
-
           <div className="recipe-content">
             <div className="recipe-header">
               <div className="recipe-video-section">
@@ -83,7 +199,7 @@ function RecipeDetail() {
                   title={recipe.title}
                   width="100%"
                   height="400px"
-                  autoplay={false}
+                  autoplay={autoplay}
                 />
                 <div className="recipe-badge">{recipe.category}</div>
                 <div className="recipe-actions">
@@ -118,21 +234,6 @@ function RecipeDetail() {
                   <div className="meta-item">
                     <i className="fas fa-star"></i>
                     <span>{recipe.rating}/5 ({recipe.totalRatings} reviews)</span>
-                  </div>
-                </div>
-
-                <div className="recipe-stats">
-                  <div className="stat-item">
-                    <i className="fas fa-eye"></i>
-                    <span>{recipe.viewCount.toLocaleString()} views</span>
-                  </div>
-                  <div className="stat-item">
-                    <i className="fas fa-shopping-cart"></i>
-                    <span>{recipe.purchaseCount} sold</span>
-                  </div>
-                  <div className="stat-item">
-                    <i className="fas fa-user"></i>
-                    <span>by {recipe.createdBy}</span>
                   </div>
                 </div>
 

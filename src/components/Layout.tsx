@@ -22,7 +22,7 @@ function Layout() {
   const handleLogout = () => {
     localStorage.removeItem('user')
     setCurrentUser(null)
-    navigate('/')
+    window.location.href = '/'
   }
 
   return (
