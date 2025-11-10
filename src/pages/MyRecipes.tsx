@@ -2,7 +2,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import VideoPreview from '../components/VideoPreview'
-import PriceButton from '../components/PriceButton'
 import type { Recipe } from '../types/recipe'
 import { fetchMyRecipes } from '../services/recipes'
 import { isAuthenticated } from '../services/auth'

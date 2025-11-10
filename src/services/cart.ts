@@ -1,5 +1,4 @@
 import { apiGet, apiPost, apiDelete } from './api'
-import type { Recipe } from '../types/recipe'
 
 export interface CartItem {
   id: number
