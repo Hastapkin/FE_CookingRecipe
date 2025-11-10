@@ -4,6 +4,8 @@ import YouTubePlayer from '../components/YouTubePlayer'
 import PriceButton from '../components/PriceButton'
 import type { Recipe } from '../types/recipe'
 import { fetchRecipeById } from '../services/recipes'
+import { getRecipeRatings, getMyRating, submitRating, deleteRating, type Rating } from '../services/ratings'
+import { isAuthenticated, getUserSession } from '../services/auth'
 
 function RecipeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -11,6 +13,12 @@ function RecipeDetail() {
   const [activeTab, setActiveTab] = useState<'ingredients' | 'instructions' | 'nutrition' | 'reviews'>('ingredients');
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
+  const [ratings, setRatings] = useState<Rating[]>([]);
+  const [ratingsLoading, setRatingsLoading] = useState(false);
+  const [myRating, setMyRating] = useState<Rating | null>(null);
+  const [isEditingRating, setIsEditingRating] = useState(false);
+  const [ratingForm, setRatingForm] = useState({ ratingScore: 5, comment: '' });
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [isPurchased] = useState(false);
   const autoplay = new URLSearchParams(location.search).get('autoplay') === '1';
 
@@ -19,7 +27,18 @@ function RecipeDetail() {
     (async () => {
       try {
         if (!id) return;
-        const data = await fetchRecipeById(Number(id));
+        // Try to fetch with auth first (for full details), fallback to public if not authenticated
+        let data = null;
+        try {
+          data = await fetchRecipeById(Number(id), true);
+        } catch (authError) {
+          // If auth fails, try without auth (public overview)
+          try {
+            data = await fetchRecipeById(Number(id), false);
+          } catch (publicError) {
+            console.error('Failed to fetch recipe:', publicError);
+          }
+        }
         if (!cancelled) {
           if (data) {
             setRecipe(data);
@@ -43,6 +62,153 @@ function RecipeDetail() {
     })();
     return () => { cancelled = true };
   }, [id]);
+
+  // Fetch ratings when reviews tab is active or recipe is loaded
+  useEffect(() => {
+    if (!id || !recipe) return;
+    
+    let cancelled = false;
+    (async () => {
+      setRatingsLoading(true);
+      try {
+        const ratingsData = await getRecipeRatings(Number(id));
+        if (!cancelled) {
+          setRatings(ratingsData.ratings || []);
+        }
+      } catch (error) {
+        console.error('Failed to load ratings', error);
+        if (!cancelled) {
+          setRatings([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setRatingsLoading(false);
+        }
+      }
+    })();
+    return () => { cancelled = true };
+  }, [id, recipe]);
+
+  // Fetch user's own rating if authenticated
+  useEffect(() => {
+    if (!id || !isAuthenticated()) return;
+    
+    let cancelled = false;
+    (async () => {
+      try {
+        const myRatingData = await getMyRating(Number(id));
+        if (!cancelled) {
+          setMyRating(myRatingData);
+          if (myRatingData) {
+            setRatingForm({
+              ratingScore: myRatingData.ratingScore,
+              comment: myRatingData.comment || ''
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load my rating', error);
+        if (!cancelled) {
+          setMyRating(null);
+        }
+      }
+    })();
+    return () => { cancelled = true };
+  }, [id]);
+
+  const handleSubmitRating = async () => {
+    if (!id) return;
+    setIsSubmittingRating(true);
+    try {
+      const submitted = await submitRating(
+        Number(id),
+        ratingForm.ratingScore,
+        ratingForm.comment || undefined
+      );
+      setMyRating(submitted);
+      setIsEditingRating(false);
+      
+      // Refresh ratings list
+      const ratingsData = await getRecipeRatings(Number(id));
+      setRatings(ratingsData.ratings || []);
+    } catch (error) {
+      console.error('Failed to submit rating', error);
+      alert('Failed to submit rating. Please try again.');
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  };
+
+  const handleDeleteRating = async () => {
+    if (!myRating || !id) return;
+    if (!confirm('Are you sure you want to delete your rating?')) return;
+    
+    try {
+      await deleteRating(myRating.id);
+      setMyRating(null);
+      setRatingForm({ ratingScore: 5, comment: '' });
+      setIsEditingRating(false);
+      
+      // Refresh ratings list
+      const ratingsData = await getRecipeRatings(Number(id));
+      setRatings(ratingsData.ratings || []);
+    } catch (error) {
+      console.error('Failed to delete rating', error);
+      alert('Failed to delete rating. Please try again.');
+    }
+  };
+
+  const startEditing = () => {
+    if (myRating) {
+      setRatingForm({
+        ratingScore: myRating.ratingScore,
+        comment: myRating.comment || ''
+      });
+    }
+    setIsEditingRating(true);
+  };
+
+  const cancelEditing = () => {
+    setIsEditingRating(false);
+    if (myRating) {
+      setRatingForm({
+        ratingScore: myRating.ratingScore,
+        comment: myRating.comment || ''
+      });
+    } else {
+      setRatingForm({ ratingScore: 5, comment: '' });
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    }
+    if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    }
+    if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} day${days !== 1 ? 's' : ''} ago`;
+    }
+    if (diffInSeconds < 2592000) {
+      const weeks = Math.floor(diffInSeconds / 604800);
+      return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
+    }
+    if (diffInSeconds < 31536000) {
+      const months = Math.floor(diffInSeconds / 2592000);
+      return `${months} month${months !== 1 ? 's' : ''} ago`;
+    }
+    const years = Math.floor(diffInSeconds / 31536000);
+    return `${years} year${years !== 1 ? 's' : ''} ago`;
+  };
 
   function toIngredients(items: string[]) {
     return items.map(label => ({ label, quantity: 0, measurement: '' })) as NonNullable<Recipe['ingredients']>;
@@ -338,7 +504,7 @@ function RecipeDetail() {
                     <h3>Customer Reviews</h3>
                     <div className="reviews-summary">
                       <div className="rating-overview">
-                        <span className="rating-number">{recipe.rating}</span>
+                        <span className="rating-number">{recipe.rating.toFixed(1)}</span>
                         <div className="rating-stars">
                           {Array.from({length: 5}).map((_, idx) => (
                             <i 
@@ -347,71 +513,200 @@ function RecipeDetail() {
                             />
                           ))}
                         </div>
-                        <span className="rating-count">({recipe.totalRatings} reviews)</span>
+                        <span className="rating-count">({recipe.totalRatings} review{recipe.totalRatings !== 1 ? 's' : ''})</span>
                       </div>
                     </div>
                   </div>
-                  <div className="reviews-list">
-                    <div className="review-item">
-                      <div className="review-header">
-                        <div className="reviewer-info">
-                          <div className="reviewer-avatar">
-                            <i className="fas fa-user"></i>
-                          </div>
-                          <div className="reviewer-details">
-                            <span className="reviewer-name">John Doe</span>
-                            <div className="review-rating">
-                              {Array.from({length: 5}).map((_, idx) => (
-                                <i key={idx} className="fas fa-star"></i>
-                              ))}
-                            </div>
-                          </div>
+
+                  {/* Rating Form - Show if authenticated and (no rating exists or editing) */}
+                  {isAuthenticated() && (!myRating || isEditingRating) && (
+                    <div className="rating-form" style={{
+                      background: '#F9FAFB',
+                      padding: '1.5rem',
+                      borderRadius: '8px',
+                      marginBottom: '2rem',
+                      border: '1px solid #E5E7EB'
+                    }}>
+                      <h4 style={{marginBottom: '1rem', fontSize: '1.1rem'}}>
+                        {myRating ? 'Edit Your Rating' : 'Write a Review'}
+                      </h4>
+                      <div style={{marginBottom: '1rem'}}>
+                        <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: '500'}}>
+                          Rating
+                        </label>
+                        <div style={{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
+                          {[1, 2, 3, 4, 5].map((score) => (
+                            <button
+                              key={score}
+                              type="button"
+                              onClick={() => setRatingForm({...ratingForm, ratingScore: score})}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontSize: '1.5rem',
+                                color: score <= ratingForm.ratingScore ? '#FBBF24' : '#D1D5DB',
+                                padding: '0.25rem'
+                              }}
+                            >
+                              <i className={score <= ratingForm.ratingScore ? "fas fa-star" : "far fa-star"}></i>
+                            </button>
+                          ))}
+                          <span style={{marginLeft: '0.5rem', color: '#6B7280'}}>
+                            {ratingForm.ratingScore} / 5
+                          </span>
                         </div>
-                        <span className="review-date">2 days ago</span>
                       </div>
-                      <p className="review-text">Amazing recipe! The video instructions were so clear and the broth was incredibly flavorful. Worth every penny!</p>
+                      <div style={{marginBottom: '1rem'}}>
+                        <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: '500'}}>
+                          Comment (optional)
+                        </label>
+                        <textarea
+                          value={ratingForm.comment}
+                          onChange={(e) => setRatingForm({...ratingForm, comment: e.target.value})}
+                          placeholder="Share your thoughts about this recipe..."
+                          rows={4}
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '1px solid #D1D5DB',
+                            borderRadius: '6px',
+                            fontSize: '0.95rem',
+                            fontFamily: 'inherit',
+                            resize: 'vertical'
+                          }}
+                        />
+                      </div>
+                      <div style={{display: 'flex', gap: '0.75rem'}}>
+                        <button
+                          onClick={handleSubmitRating}
+                          disabled={isSubmittingRating}
+                          className="btn btn-primary"
+                          style={{minWidth: '120px'}}
+                        >
+                          {isSubmittingRating ? 'Submitting...' : (myRating ? 'Update Rating' : 'Submit Rating')}
+                        </button>
+                        {myRating && (
+                          <button
+                            onClick={cancelEditing}
+                            disabled={isSubmittingRating}
+                            className="btn btn-outline"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="review-item">
-                      <div className="review-header">
-                        <div className="reviewer-info">
-                          <div className="reviewer-avatar">
-                            <i className="fas fa-user"></i>
-                          </div>
-                          <div className="reviewer-details">
-                            <span className="reviewer-name">Jane Smith</span>
-                            <div className="review-rating">
-                              <i className="fas fa-star"></i>
-                              <i className="fas fa-star"></i>
-                              <i className="fas fa-star"></i>
-                              <i className="fas fa-star"></i>
-                              <i className="far fa-star"></i>
-                            </div>
-                          </div>
+                  )}
+
+                  {/* My Rating Display (when not editing) */}
+                  {isAuthenticated() && myRating && !isEditingRating && (
+                    <div className="my-rating" style={{
+                      background: '#EFF6FF',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      marginBottom: '1.5rem',
+                      border: '1px solid #BFDBFE'
+                    }}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem'}}>
+                        <strong style={{color: '#1E40AF'}}>Your Rating</strong>
+                        <div style={{display: 'flex', gap: '0.5rem'}}>
+                          <button
+                            onClick={startEditing}
+                            className="btn btn-outline"
+                            style={{padding: '0.375rem 0.75rem', fontSize: '0.875rem'}}
+                          >
+                            <i className="fas fa-edit"></i> Edit
+                          </button>
+                          <button
+                            onClick={handleDeleteRating}
+                            className="btn btn-outline"
+                            style={{padding: '0.375rem 0.75rem', fontSize: '0.875rem', color: '#DC2626'}}
+                          >
+                            <i className="fas fa-trash"></i> Delete
+                          </button>
                         </div>
-                        <span className="review-date">1 week ago</span>
                       </div>
-                      <p className="review-text">Great recipe! The video made it easy to follow along. Took longer than expected but the result was fantastic.</p>
+                      <div style={{display: 'flex', gap: '0.5rem', marginBottom: '0.5rem'}}>
+                        {Array.from({length: 5}).map((_, idx) => (
+                          <i 
+                            key={idx} 
+                            className={idx < myRating.ratingScore ? "fas fa-star" : "far fa-star"}
+                            style={{color: '#FBBF24'}}
+                          />
+                        ))}
+                      </div>
+                      {myRating.comment && (
+                        <p style={{color: '#374151', margin: 0}}>{myRating.comment}</p>
+                      )}
                     </div>
-                    <div className="review-item">
-                      <div className="review-header">
-                        <div className="reviewer-info">
-                          <div className="reviewer-avatar">
-                            <i className="fas fa-user"></i>
-                          </div>
-                          <div className="reviewer-details">
-                            <span className="reviewer-name">Mike Chen</span>
-                            <div className="review-rating">
-                              {Array.from({length: 5}).map((_, idx) => (
-                                <i key={idx} className="fas fa-star"></i>
-                              ))}
+                  )}
+
+                  {ratingsLoading ? (
+                    <div className="loading-container" style={{padding: '2rem'}}>
+                      <div className="loading-spinner"></div>
+                      <p>Loading reviews...</p>
+                    </div>
+                  ) : ratings.length === 0 ? (
+                    <div className="no-results" style={{padding: '3rem 1rem'}}>
+                      <i className="fas fa-comments" style={{fontSize: '3rem', color: '#9CA3AF', marginBottom: '1rem'}}></i>
+                      <h3>No reviews yet</h3>
+                      <p>Be the first to review this recipe!</p>
+                    </div>
+                  ) : (
+                    <div className="reviews-list">
+                      {ratings.map((rating) => {
+                        const currentUser = getUserSession();
+                        const isMyRating = currentUser && rating.userId === currentUser.user.id;
+
+                        return (
+                          <div 
+                            key={rating.id} 
+                            className="review-item"
+                            style={isMyRating ? {
+                              background: '#F0F9FF',
+                              border: '1px solid #BAE6FD',
+                              borderRadius: '8px',
+                              padding: '1rem'
+                            } : {}}
+                          >
+                            <div className="review-header">
+                              <div className="reviewer-info">
+                                <div className="reviewer-avatar">
+                                  <i className="fas fa-user"></i>
+                                </div>
+                                <div className="reviewer-details">
+                                  <span className="reviewer-name">
+                                    {rating.username}
+                                    {isMyRating && (
+                                      <span style={{
+                                        marginLeft: '0.5rem',
+                                        fontSize: '0.75rem',
+                                        color: '#1E40AF',
+                                        fontWeight: '500'
+                                      }}>(You)</span>
+                                    )}
+                                  </span>
+                                  <div className="review-rating">
+                                    {Array.from({length: 5}).map((_, idx) => (
+                                      <i 
+                                        key={idx} 
+                                        className={idx < rating.ratingScore ? "fas fa-star" : "far fa-star"}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="review-date">{formatDate(rating.createdAt)}</span>
                             </div>
+                            {rating.comment && (
+                              <p className="review-text">{rating.comment}</p>
+                            )}
                           </div>
-                        </div>
-                        <span className="review-date">2 weeks ago</span>
-                      </div>
-                      <p className="review-text">Perfect! As someone who's never made pho before, the step-by-step video was incredibly helpful. Restaurant quality at home!</p>
+                        );
+                      })}
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>

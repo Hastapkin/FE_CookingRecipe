@@ -1,21 +1,36 @@
 // React import not required with react-jsx runtime
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { register, saveUserSession } from '../services/auth'
 
 function Register() {
   const navigate = useNavigate()
-  const [name, setName] = useState('Demo User')
-  const [email, setEmail] = useState('trung@example.com')
-  const [password, setPassword] = useState('trung1234')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('loading')
-    await new Promise(r => setTimeout(r, 800))
-    setStatus('success')
-    localStorage.setItem('user', JSON.stringify({ name, email }))
-    window.location.href = '/'
+    setErrorMessage('')
+    
+    try {
+      const response = await register(username, password)
+      if (response.success && response.token) {
+        setStatus('success')
+        saveUserSession(response.user, response.token)
+        setTimeout(() => {
+          navigate('/')
+        }, 1000)
+      } else {
+        setStatus('error')
+        setErrorMessage('Registration failed. Please try again.')
+      }
+    } catch (error) {
+      setStatus('error')
+      setErrorMessage(error instanceof Error ? error.message : 'Registration failed. Username may already exist.')
+    }
   }
 
   const handleGoogle = () => {
@@ -34,12 +49,8 @@ function Register() {
             <h2 style={{textAlign: 'center'}}>Create an account</h2>
             <form onSubmit={handleSubmit} className="contact-form" style={{marginTop: '1rem'}}>
               <div className="form-group">
-                <label htmlFor="name">Full Name</label>
-                <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required />
-              </div>
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                <label htmlFor="username">Username</label>
+                <input id="username" type="text" value={username} onChange={e => setUsername(e.target.value)} required />
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password</label>
@@ -48,7 +59,13 @@ function Register() {
               {status === 'success' && (
                 <div className="form-success">
                   <i className="fas fa-check-circle"></i>
-                  <span>Registration successful! Redirecting to login...</span>
+                  <span>Registration successful! Redirecting...</span>
+                </div>
+              )}
+              {status === 'error' && (
+                <div className="form-error">
+                  <i className="fas fa-exclamation-circle"></i>
+                  <span>{errorMessage || 'Registration failed'}</span>
                 </div>
               )}
               <button type="submit" className="btn btn-primary btn-large" disabled={status==='loading'}>

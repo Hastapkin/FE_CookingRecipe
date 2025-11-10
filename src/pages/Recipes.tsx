@@ -1,6 +1,6 @@
 // React import not required with react-jsx runtime
 import { Link, useNavigate } from 'react-router-dom'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import VideoPreview from '../components/VideoPreview'
 import PriceButton from '../components/PriceButton'
 import type { Recipe } from '../types/recipe'
@@ -11,6 +11,12 @@ function Recipes() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 3,
+    total: 0,
+    totalPages: 1
+  });
   const pageSize = 3;
   const [filters, setFilters] = useState({
     category: '',
@@ -23,11 +29,42 @@ function Recipes() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setLoading(true);
       try {
-        const data = await fetchRecipes();
+        // Map frontend filters to API query params
+        const apiParams: any = {};
+        if (filters.search) apiParams.search = filters.search;
+        if (filters.difficulty) {
+          // Map frontend difficulty (Easy/Medium/Hard) to API format (easy/medium/hard)
+          apiParams.difficulty = filters.difficulty.toLowerCase();
+        }
+        if (filters.time) {
+          // Map frontend time filters to API format
+          const time = parseInt(filters.time);
+          if (time === 30) apiParams.cookingTime = '<30';
+          else if (time === 60) apiParams.cookingTime = '30-60';
+          else if (time === 120) apiParams.cookingTime = '60-120';
+          else if (time === 121) apiParams.cookingTime = '>120';
+        }
+        if (filters.sortBy) {
+          // Map frontend sort options to API format
+          const sortMap: Record<string, string> = {
+            'newest': 'newest',
+            'popular': 'popular',
+            'rating': 'rating',
+            'price-low': 'price',
+            'price-high': 'price'
+          };
+          apiParams.sortBy = sortMap[filters.sortBy] || 'newest';
+        }
+        apiParams.page = currentPage;
+        apiParams.limit = pageSize;
+
+        const result = await fetchRecipes(apiParams);
         if (!cancelled) {
-          if (Array.isArray(data) && data.length > 0) {
-            setRecipes(data);
+          if (result.recipes && result.recipes.length > 0) {
+            setRecipes(result.recipes);
+            setPagination(result.pagination);
           } else {
             // Fallback to static featured samples (dev FE seed)
             const featured: Recipe[] = [
@@ -65,7 +102,7 @@ function Recipes() {
       }
     })();
     return () => { cancelled = true };
-  }, []);
+  }, [filters.search, filters.difficulty, filters.time, filters.sortBy, currentPage]);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -76,40 +113,16 @@ function Recipes() {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  // Since API handles filtering and sorting, we just use recipes directly
+  // But we still need client-side filtering for category (if not supported by API)
   const filteredRecipes = recipes.filter(recipe => {
     if (filters.category && recipe.category !== filters.category) return false;
-    if (filters.difficulty && recipe.difficulty !== filters.difficulty) return false;
-    if (filters.time) {
-      const time = parseInt(filters.time);
-      if (time === 30 && recipe.cookingTime > 30) return false;
-      if (time === 60 && (recipe.cookingTime <= 30 || recipe.cookingTime > 60)) return false;
-      if (time === 120 && (recipe.cookingTime <= 60 || recipe.cookingTime > 120)) return false;
-      if (time === 121 && recipe.cookingTime <= 120) return false;
-    }
-    if (filters.search && !recipe.title.toLowerCase().includes(filters.search.toLowerCase())) return false;
     return true;
   });
 
-  const sortedRecipes = [...filteredRecipes].sort((a, b) => {
-    switch (filters.sortBy) {
-      case 'popular':
-        return b.purchaseCount - a.purchaseCount;
-      case 'price-low':
-        return a.price - b.price;
-      case 'price-high':
-        return b.price - a.price;
-      case 'rating':
-        return b.rating - a.rating;
-      default:
-        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-    }
-  });
-
-  const totalPages = Math.max(1, Math.ceil(sortedRecipes.length / pageSize));
-  const paginatedRecipes = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return sortedRecipes.slice(start, start + pageSize);
-  }, [sortedRecipes, currentPage]);
+  // Use API pagination data
+  const totalPages = pagination.totalPages || 1;
+  const paginatedRecipes = filteredRecipes; // API already paginates, but we filter category client-side
 
   return (
     <main>
@@ -186,7 +199,7 @@ function Recipes() {
           ) : (
             <>
               <div className="results-header">
-                <h3>Found {sortedRecipes.length} video recipes</h3>
+                <h3>Found {pagination.total || filteredRecipes.length} video recipes</h3>
               </div>
               
               <div className="recipes-grid">
@@ -270,7 +283,7 @@ function Recipes() {
                 ))}
               </div>
 
-              {sortedRecipes.length === 0 && (
+              {filteredRecipes.length === 0 && (
                 <div className="no-results">
                   <i className="fas fa-search"></i>
                   <h3>No recipes found</h3>

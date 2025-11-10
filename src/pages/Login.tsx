@@ -1,24 +1,32 @@
 // React import not required with react-jsx runtime
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { login, saveUserSession } from '../services/auth'
 
 function Login() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('trung@example.com')
-  const [password, setPassword] = useState('trung1234')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('loading')
-    // Simulate login
-    await new Promise(r => setTimeout(r, 800))
-    if (email && password) {
-      const nameGuess = email.split('@')[0]
-      localStorage.setItem('user', JSON.stringify({ name: nameGuess, email }))
-      window.location.href = '/'
-    } else {
+    setErrorMessage('')
+    
+    try {
+      const response = await login(username, password)
+      if (response.success && response.token) {
+        saveUserSession(response.user, response.token)
+        navigate('/')
+      } else {
+        setStatus('error')
+        setErrorMessage('Login failed. Please check your credentials.')
+      }
+    } catch (error) {
       setStatus('error')
+      setErrorMessage(error instanceof Error ? error.message : 'Login failed. Please try again.')
     }
   }
 
@@ -39,8 +47,8 @@ function Login() {
             <h2 style={{textAlign: 'center'}}>Sign in to your account</h2>
             <form onSubmit={handleSubmit} className="contact-form" style={{marginTop: '1rem'}}>
               <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                <label htmlFor="username">Username</label>
+                <input id="username" type="text" value={username} onChange={e => setUsername(e.target.value)} required />
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password</label>
@@ -49,7 +57,7 @@ function Login() {
               {status === 'error' && (
                 <div className="form-error">
                   <i className="fas fa-exclamation-circle"></i>
-                  <span>Invalid credentials</span>
+                  <span>{errorMessage || 'Invalid credentials'}</span>
                 </div>
               )}
               <button type="submit" className="btn btn-primary btn-large" disabled={status==='loading'}>
@@ -65,9 +73,6 @@ function Login() {
               <i className="fab fa-google"></i> Continue with Google
             </button>
             <p style={{marginTop:'16px'}}>Don't have an account? <Link to="/register">Register</Link></p>
-            <div style={{marginTop:'8px', fontSize:12, color:'#6B7280'}}>
-              Demo: demo@example.com / demo1234
-            </div>
           </div>
         </div>
       </section>

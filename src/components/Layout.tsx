@@ -1,28 +1,46 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { getUserSession, clearUserSession } from '../services/auth'
 
 function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [currentUser, setCurrentUser] = useState<{ name?: string; email?: string } | null>(null)
+  const [currentUser, setCurrentUser] = useState<{ username?: string; name?: string; email?: string } | null>(null)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    const raw = localStorage.getItem('user')
-    if (raw) {
-      try { setCurrentUser(JSON.parse(raw)) } catch {}
+  const updateUser = () => {
+    const session = getUserSession()
+    if (session) {
+      setCurrentUser({ username: session.user.username, name: session.user.username, email: session.user.username })
+    } else {
+      setCurrentUser(null)
     }
+  }
+
+  useEffect(() => {
+    updateUser()
+    
+    // Listen for storage events (from other tabs)
     const handler = () => {
-      const v = localStorage.getItem('user')
-      setCurrentUser(v ? JSON.parse(v) : null)
+      updateUser()
     }
     window.addEventListener('storage', handler)
-    return () => window.removeEventListener('storage', handler)
+    
+    // Listen for custom auth events (from same tab)
+    const authHandler = () => {
+      updateUser()
+    }
+    window.addEventListener('authStateChanged', authHandler)
+    
+    return () => {
+      window.removeEventListener('storage', handler)
+      window.removeEventListener('authStateChanged', authHandler)
+    }
   }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem('user')
+    clearUserSession()
     setCurrentUser(null)
-    window.location.href = '/'
+    navigate('/')
   }
 
   return (
@@ -85,6 +103,14 @@ function Layout() {
               {currentUser ? (
                 <>
                   <NavLink 
+                    to="/my-recipes" 
+                    className="btn btn-outline"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <i className="fas fa-book"></i> 
+                    <span className="hide-sm">My Recipes</span>
+                  </NavLink>
+                  <NavLink 
                     to="/my-orders" 
                     className="btn btn-outline"
                     onClick={() => setMobileMenuOpen(false)}
@@ -94,7 +120,7 @@ function Layout() {
                   </NavLink>
                   <div className="btn btn-outline" style={{display:'flex', gap:8, alignItems:'center'}}>
                     <i className="fas fa-user-circle"></i>
-                    <span className="hide-sm">{currentUser.name || currentUser.email}</span>
+                    <span className="hide-sm">{currentUser.username || currentUser.name || currentUser.email}</span>
                   </div>
                   <button className="btn btn-primary" onClick={handleLogout}>
                     <i className="fas fa-sign-out-alt"></i>
