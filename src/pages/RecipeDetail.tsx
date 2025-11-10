@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link, useLocation } from 'react-router-dom'
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom'
 import YouTubePlayer from '../components/YouTubePlayer'
 import PriceButton from '../components/PriceButton'
 import type { Recipe } from '../types/recipe'
 import { fetchRecipeById } from '../services/recipes'
 import { getRecipeRatings, getMyRating, submitRating, deleteRating, type Rating } from '../services/ratings'
 import { isAuthenticated, getUserSession } from '../services/auth'
+import { addToCart } from '../services/cart'
+import { fetchMyRecipes } from '../services/recipes'
 
 function RecipeDetail() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'ingredients' | 'instructions' | 'nutrition' | 'reviews'>('ingredients');
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,7 +22,7 @@ function RecipeDetail() {
   const [isEditingRating, setIsEditingRating] = useState(false);
   const [ratingForm, setRatingForm] = useState({ ratingScore: 5, comment: '' });
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
-  const [isPurchased] = useState(false);
+  const [isPurchased, setIsPurchased] = useState(false);
   const autoplay = new URLSearchParams(location.search).get('autoplay') === '1';
 
   useEffect(() => {
@@ -89,27 +92,45 @@ function RecipeDetail() {
     return () => { cancelled = true };
   }, [id, recipe]);
 
-  // Fetch user's own rating if authenticated
+  // Check if recipe is purchased and fetch user's rating if authenticated
   useEffect(() => {
-    if (!id || !isAuthenticated()) return;
+    if (!id || !isAuthenticated()) {
+      setIsPurchased(false);
+      return;
+    }
     
     let cancelled = false;
     (async () => {
       try {
-        const myRatingData = await getMyRating(Number(id));
+        // Check if recipe is in purchased recipes
+        const myRecipes = await fetchMyRecipes({});
+        const purchased = myRecipes.recipes.some(r => r.id === Number(id));
         if (!cancelled) {
-          setMyRating(myRatingData);
-          if (myRatingData) {
-            setRatingForm({
-              ratingScore: myRatingData.ratingScore,
-              comment: myRatingData.comment || ''
-            });
+          setIsPurchased(purchased);
+        }
+
+        // Fetch user's rating
+        try {
+          const myRatingData = await getMyRating(Number(id));
+          if (!cancelled) {
+            setMyRating(myRatingData);
+            if (myRatingData) {
+              setRatingForm({
+                ratingScore: myRatingData.ratingScore,
+                comment: myRatingData.comment || ''
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load my rating', error);
+          if (!cancelled) {
+            setMyRating(null);
           }
         }
       } catch (error) {
-        console.error('Failed to load my rating', error);
+        console.error('Failed to check purchase status', error);
         if (!cancelled) {
-          setMyRating(null);
+          setIsPurchased(false);
         }
       }
     })();
@@ -319,14 +340,23 @@ function RecipeDetail() {
     ] as Recipe[]
   }
 
-  const handlePurchase = () => {
-    console.log('Purchasing recipe:', recipe?.id);
-    // Implement purchase logic here
+  const handlePurchase = async () => {
+    if (!recipe || !isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      await addToCart(recipe.id);
+      // Stay on page to continue browsing
+    } catch (error) {
+      console.error('Failed to add to cart', error);
+      alert('Failed to add recipe to cart. Please try again.');
+    }
   };
 
   const handleViewPurchased = () => {
-    console.log('Viewing purchased recipe:', recipe?.id);
-    // Navigate to full recipe content
+    // Already viewing the recipe
   };
 
   if (loading) {
@@ -468,33 +498,29 @@ function RecipeDetail() {
               {activeTab === 'nutrition' && (
                 <div className="nutrition-section">
                   <h3>Nutrition Information</h3>
-                  <div className="nutrition-grid">
-                    <div className="nutrition-item">
-                      <span className="nutrition-label">Calories</span>
-                      <span className="nutrition-value">450</span>
+                  {recipe.nutrition && recipe.nutrition.length > 0 ? (
+                    <>
+                      <div className="nutrition-grid">
+                        {recipe.nutrition.map((nutrient, index) => (
+                          <div key={index} className="nutrition-item">
+                            <span className="nutrition-label">
+                              {nutrient.type.charAt(0).toUpperCase() + nutrient.type.slice(1)}
+                            </span>
+                            <span className="nutrition-value">
+                              {nutrient.quantity} {nutrient.measurement}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="nutrition-note">*Nutrition information is per serving</p>
+                    </>
+                  ) : (
+                    <div className="no-results" style={{padding: '3rem 1rem', textAlign: 'center'}}>
+                      <i className="fas fa-chart-pie" style={{fontSize: '3rem', color: '#9CA3AF', marginBottom: '1rem'}}></i>
+                      <h3>No nutrition information available</h3>
+                      <p>Nutrition information has not been provided for this recipe.</p>
                     </div>
-                    <div className="nutrition-item">
-                      <span className="nutrition-label">Protein</span>
-                      <span className="nutrition-value">25g</span>
-                    </div>
-                    <div className="nutrition-item">
-                      <span className="nutrition-label">Carbs</span>
-                      <span className="nutrition-value">35g</span>
-                    </div>
-                    <div className="nutrition-item">
-                      <span className="nutrition-label">Fat</span>
-                      <span className="nutrition-value">18g</span>
-                    </div>
-                    <div className="nutrition-item">
-                      <span className="nutrition-label">Fiber</span>
-                      <span className="nutrition-value">3g</span>
-                    </div>
-                    <div className="nutrition-item">
-                      <span className="nutrition-label">Sodium</span>
-                      <span className="nutrition-value">1200mg</span>
-                    </div>
-                  </div>
-                  <p className="nutrition-note">*Nutrition information is per serving</p>
+                  )}
                 </div>
               )}
 

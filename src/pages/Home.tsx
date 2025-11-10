@@ -1,5 +1,7 @@
 // React import not required with react-jsx runtime
 import { Link, useNavigate } from 'react-router-dom'
+import { addToCart } from '../services/cart'
+import { isAuthenticated } from '../services/auth'
 import YouTubePlayer from '../components/YouTubePlayer'
 import VideoPreview from '../components/VideoPreview'
 import PriceButton from '../components/PriceButton'
@@ -98,9 +100,25 @@ function Home() {
                   />
                   <div className="recipe-badge">{recipe.category}</div>
                   <div className="recipe-overlay">
-                    <Link to={`/recipe-detail/${recipe.id}`} className="btn btn-small">
+                    <button 
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        if (!isAuthenticated()) {
+                          navigate('/login');
+                          return;
+                        }
+                        try {
+                          await addToCart(recipe.id);
+                          navigate('/checkout');
+                        } catch (error) {
+                          console.error('Failed to add to cart', error);
+                          alert('Failed to add recipe to cart. Please try again.');
+                        }
+                      }}
+                      className="btn btn-small"
+                    >
                       <i className="fas fa-play"></i> Watch Recipe
-                    </Link>
+                    </button>
                   </div>
                   <div className="recipe-actions">
                     <button className="action-btn favorite-btn" data-tooltip="Add to favorites">
@@ -142,12 +160,17 @@ function Home() {
                       price={recipe.price}
                       isForSale={recipe.isForSale}
                       size="small"
-                      onPurchase={() => {
-                        const user = localStorage.getItem('user')
-                        if (user) {
-                          navigate(`/recipe-detail/${recipe.id}?autoplay=1`)
-                        } else {
-                          navigate('/login')
+                      onPurchase={async () => {
+                        if (!isAuthenticated()) {
+                          navigate('/login');
+                          return;
+                        }
+                        try {
+                          await addToCart(recipe.id);
+                          // Stay on page to continue browsing
+                        } catch (error) {
+                          console.error('Failed to add to cart', error);
+                          alert('Failed to add recipe to cart. Please try again.');
                         }
                       }}
                     />

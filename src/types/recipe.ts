@@ -26,5 +26,10 @@ export interface Recipe {
     content: string;
   }>;
   tags?: string[];
+  nutrition?: Array<{
+    type: string;
+    quantity: number;
+    measurement: string;
+  }>;
 }
 

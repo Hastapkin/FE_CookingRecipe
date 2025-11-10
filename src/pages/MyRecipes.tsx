@@ -226,20 +226,6 @@ function MyRecipes() {
                               <i className="fas fa-play"></i> Watch Recipe
                             </Link>
                           </div>
-                          <div className="recipe-actions">
-                            <div className="action-btn purchased-badge" style={{
-                              background: 'rgba(34, 197, 94, 0.9)',
-                              color: 'white',
-                              border: 'none',
-                              padding: '8px 12px',
-                              borderRadius: '4px',
-                              fontSize: '12px',
-                              fontWeight: '600',
-                              cursor: 'default'
-                            }}>
-                              <i className="fas fa-check-circle"></i> Purchased
-                            </div>
-                          </div>
                         </div>
                         <div className="recipe-content">
                           <div className="recipe-header">
