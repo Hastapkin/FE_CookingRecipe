@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://recipe-api-cmz3.onrender.com/api'
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://recipe-api-t5t0.onrender.com/api'
 
 // Get authentication token from localStorage
 function getAuthToken(): string | null {
