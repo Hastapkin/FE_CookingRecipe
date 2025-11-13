@@ -350,13 +350,30 @@ function RecipeDetail() {
       await addToCart(recipe.id);
       // Stay on page to continue browsing
     } catch (error) {
-      console.error('Failed to add to cart', error);
-      alert('Failed to add recipe to cart. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Check if item is already in cart
+      if (errorMessage.toLowerCase().includes('already') || 
+          errorMessage.toLowerCase().includes('duplicate') ||
+          errorMessage.toLowerCase().includes('exists')) {
+        alert('Item is already in cart');
+        navigate('/cart');
+      } else {
+        console.error('Failed to add to cart', error);
+        alert('Failed to add recipe to cart. Please try again.');
+      }
     }
   };
 
   const handleViewPurchased = () => {
-    // Already viewing the recipe
+    if (!recipe || !isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+    // If not purchased, redirect to cart
+    if (!isPurchased) {
+      navigate('/cart');
+    }
+    // If purchased, already viewing the recipe
   };
 
   if (loading) {

@@ -4,6 +4,7 @@ import ScrollToTop from './components/ScrollToTop'
 import Home from './pages/Home'
 import Recipes from './pages/Recipes'
 import RecipeDetail from './pages/RecipeDetail'
+import Cart from './pages/Cart'
 import Checkout from './pages/Checkout'
 import CheckoutSuccess from './pages/CheckoutSuccess'
 import MyOrders from './pages/MyOrders'
@@ -23,6 +24,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/recipes" element={<Recipes />} />
           <Route path="/recipe-detail/:id" element={<RecipeDetail />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/my-orders" element={<MyOrders />} />

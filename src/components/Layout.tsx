@@ -1,10 +1,12 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { getUserSession, clearUserSession } from '../services/auth'
 
 function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [currentUser, setCurrentUser] = useState<{ username?: string; name?: string; email?: string } | null>(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
   const updateUser = () => {
@@ -36,6 +38,23 @@ function Layout() {
       window.removeEventListener('authStateChanged', authHandler)
     }
   }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [dropdownOpen])
 
   const handleLogout = () => {
     clearUserSession()
@@ -110,14 +129,42 @@ function Layout() {
                     <i className="fas fa-book"></i> 
                     <span className="hide-sm">My Recipes</span>
                   </NavLink>
-                  <NavLink 
-                    to="/my-orders" 
-                    className="btn btn-outline"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="fas fa-shopping-bag"></i> 
-                    <span className="hide-sm">My Orders</span>
-                  </NavLink>
+                  <div className="dropdown-container" ref={dropdownRef}>
+                    <button 
+                      className="btn btn-outline dropdown-toggle"
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                    >
+                      <i className="fas fa-shopping-bag"></i>
+                      <span className="hide-sm">Orders</span>
+                      <i className={`fas fa-chevron-${dropdownOpen ? 'up' : 'down'} dropdown-arrow`}></i>
+                    </button>
+                    {dropdownOpen && (
+                      <div className="dropdown-menu">
+                        <NavLink 
+                          to="/cart" 
+                          className="dropdown-item"
+                          onClick={() => {
+                            setDropdownOpen(false)
+                            setMobileMenuOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-shopping-cart"></i>
+                          <span>Cart</span>
+                        </NavLink>
+                        <NavLink 
+                          to="/my-orders" 
+                          className="dropdown-item"
+                          onClick={() => {
+                            setDropdownOpen(false)
+                            setMobileMenuOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-receipt"></i>
+                          <span>My Orders</span>
+                        </NavLink>
+                      </div>
+                    )}
+                  </div>
                   <div className="btn btn-outline" style={{display:'flex', gap:8, alignItems:'center'}}>
                     <i className="fas fa-user-circle"></i>
                     <span className="hide-sm">{currentUser.username || currentUser.name || currentUser.email}</span>
@@ -129,14 +176,42 @@ function Layout() {
                 </>
               ) : (
                 <>
-                  <NavLink 
-                    to="/my-orders" 
-                    className="btn btn-outline"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <i className="fas fa-shopping-bag"></i> 
-                    <span className="hide-sm">My Orders</span>
-                  </NavLink>
+                  <div className="dropdown-container" ref={dropdownRef}>
+                    <button 
+                      className="btn btn-outline dropdown-toggle"
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                    >
+                      <i className="fas fa-shopping-bag"></i>
+                      <span className="hide-sm">Orders</span>
+                      <i className={`fas fa-chevron-${dropdownOpen ? 'up' : 'down'} dropdown-arrow`}></i>
+                    </button>
+                    {dropdownOpen && (
+                      <div className="dropdown-menu">
+                        <NavLink 
+                          to="/cart" 
+                          className="dropdown-item"
+                          onClick={() => {
+                            setDropdownOpen(false)
+                            setMobileMenuOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-shopping-cart"></i>
+                          <span>Cart</span>
+                        </NavLink>
+                        <NavLink 
+                          to="/my-orders" 
+                          className="dropdown-item"
+                          onClick={() => {
+                            setDropdownOpen(false)
+                            setMobileMenuOpen(false)
+                          }}
+                        >
+                          <i className="fas fa-receipt"></i>
+                          <span>My Orders</span>
+                        </NavLink>
+                      </div>
+                    )}
+                  </div>
                   <NavLink 
                     to="/login" 
                     className="btn btn-outline"

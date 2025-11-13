@@ -95,7 +95,7 @@ const PriceButton: React.FC<PriceButtonProps> = ({
         ) : (
           <>
             <i className="fas fa-shopping-cart"></i>
-            Buy Now
+            Add to Cart
           </>
         )}
       </button>

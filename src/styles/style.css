@@ -349,6 +349,77 @@ ul, ol {
   transition: all var(--transition-base);
 }
 
+/* Dropdown Styles */
+.dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  position: relative;
+}
+
+.dropdown-arrow {
+  font-size: var(--text-xs);
+  margin-left: var(--spacing-xs);
+  transition: transform var(--transition-base);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + var(--spacing-sm));
+  right: 0;
+  background: white;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  min-width: 180px;
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownFadeIn var(--transition-base);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  border-bottom: 1px solid var(--neutral-100);
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: var(--neutral-50);
+  color: var(--primary-color);
+}
+
+.dropdown-item i {
+  width: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.dropdown-item:hover i {
+  color: var(--primary-color);
+}
+
 /* ============================================
    BUTTONS
    ============================================ */
@@ -1641,6 +1712,126 @@ section {
   color: var(--accent-error);
 }
 
+.form-help-text {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.file-upload-label {
+  display: block;
+  cursor: pointer;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-upload-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border: 2px dashed var(--neutral-300);
+  border-radius: var(--radius-lg);
+  background: var(--neutral-50);
+  color: var(--text-secondary);
+  transition: all var(--transition-base);
+  font-weight: 600;
+}
+
+.file-upload-button:hover {
+  border-color: var(--primary-color);
+  background: rgba(255, 107, 53, 0.05);
+  color: var(--primary-color);
+}
+
+.file-upload-button i {
+  font-size: var(--text-xl);
+}
+
+.payment-proof-preview {
+  position: relative;
+  margin-top: var(--spacing-md);
+  display: inline-block;
+  max-width: 100%;
+}
+
+.payment-proof-preview img {
+  max-width: 300px;
+  max-height: 300px;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--neutral-200);
+  object-fit: contain;
+}
+
+.remove-preview-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--accent-error);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+}
+
+.remove-preview-btn:hover {
+  background: #DC2626;
+  transform: scale(1.1);
+}
+
+.payment-info-box {
+  background: var(--neutral-50);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-md);
+}
+
+.payment-info-box h4 {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+  font-size: var(--text-lg);
+}
+
+.payment-info-box h4 i {
+  color: var(--primary-color);
+}
+
+.payment-info-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.payment-info-box ul li {
+  padding: var(--spacing-sm) 0;
+  padding-left: var(--spacing-lg);
+  position: relative;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.payment-info-box ul li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1687,6 +1878,17 @@ section {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.placeholder-image {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--neutral-200);
+  color: var(--neutral-400);
+  font-size: var(--text-2xl);
 }
 
 .item-details {
@@ -1754,6 +1956,31 @@ section {
   transform: scale(1.2);
 }
 
+.order-items-list {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 2px solid var(--neutral-200);
+}
+
+.order-item-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) 0;
+  font-size: var(--text-sm);
+}
+
+.order-item-line .item-name {
+  color: var(--text-primary);
+  flex: 1;
+  margin-right: var(--spacing-md);
+}
+
+.order-item-line .item-price {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
 .order-totals {
   border-top: 2px solid var(--neutral-200);
   padding-top: var(--spacing-lg);
@@ -1800,6 +2027,86 @@ section {
 /* ============================================
    SUCCESS PAGE
    ============================================ */
+.checkout-success-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  max-width: 400px;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-content {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-lg);
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+  border-left: 4px solid var(--accent-success);
+  position: relative;
+}
+
+.notification-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--accent-success) 0%, #059669 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: var(--text-xl);
+}
+
+.notification-text {
+  flex: 1;
+}
+
+.notification-text h3 {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--text-lg);
+  color: var(--text-primary);
+}
+
+.notification-text p {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.notification-close {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.notification-close:hover {
+  background: var(--neutral-100);
+  color: var(--text-primary);
+}
+
 .success-container {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -2192,6 +2499,37 @@ section {
   display: flex;
   gap: var(--spacing-md);
   flex-wrap: wrap;
+}
+
+.pending-message,
+.rejected-message {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  width: 100%;
+}
+
+.pending-message {
+  background: rgba(245, 158, 11, 0.1);
+  color: #92400E;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.pending-message i {
+  color: var(--accent-warning);
+}
+
+.rejected-message {
+  background: rgba(239, 68, 68, 0.1);
+  color: #991B1B;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.rejected-message i {
+  color: var(--accent-error);
 }
 
 .orders-summary {
@@ -3427,6 +3765,20 @@ section {
   .nav-auth .btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .dropdown-container {
+    width: 100%;
+  }
+
+  .dropdown-menu {
+    position: static;
+    width: 100%;
+    margin-top: var(--spacing-sm);
+    box-shadow: none;
+    border: none;
+    border-top: 1px solid var(--neutral-200);
+    border-radius: 0;
   }
   
   .nav-toggle {

@@ -1,81 +1,106 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { getTransactions, getTransaction } from '../services/transactions'
+import { getUserSession } from '../services/auth'
+
+interface OrderItem {
+  recipeId: number
+  title: string
+  price: number
+  videoThumbnail?: string | null
+}
 
 interface Order {
-  orderId: number;
-  totalAmount: number;
-  status: 'pending' | 'paid' | 'cancelled' | 'refunded';
-  paymentMethod: string;
-  createdAt: string;
-  items: Array<{
-    orderItemId: number;
-    recipeId: number;
-    price: number;
-    quantity: number;
-    title: string;
-    youtubeVideoId: string;
-    videoThumbnail: string;
-  }>;
+  id: number
+  totalAmount: number
+  status: 'pending' | 'verified' | 'rejected'
+  paymentMethod?: string | null
+  createdAt: string
+  adminNotes?: string | null
+  items: OrderItem[]
 }
 
 function MyOrders() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'paid' | 'pending' | 'cancelled'>('all');
+  const navigate = useNavigate()
+  const [allOrders, setAllOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [filter, setFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all')
 
-  // Sample data - replace with API call
   useEffect(() => {
-    const sampleOrders: Order[] = [
-      {
-        orderId: 1,
-        totalAmount: 11.98,
-        status: 'paid',
-        paymentMethod: 'stripe',
-        createdAt: '2024-01-15T10:30:00Z',
-        items: [
-          {
-            orderItemId: 1,
-            recipeId: 1,
-            price: 4.99,
-            quantity: 1,
-            title: 'Vietnamese Com Tam',
-            youtubeVideoId: 'P50LW8SzfXQ',
-            videoThumbnail: 'https://img.youtube.com/vi/P50LW8SzfXQ/maxresdefault.jpg'
-          },
-        ]
+    loadOrders()
+  }, [])
+
+  const loadOrders = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const session = getUserSession()
+      if (!session) {
+        navigate('/login')
+        return
       }
-    ];
 
-    setTimeout(() => {
-      setOrders(sampleOrders);
-      setLoading(false);
-    }, 1000);
-  }, []);
+      // Always get all transactions to show correct counts
+      const transactions = await getTransactions()
 
-  const filteredOrders = orders.filter(order => {
-    if (filter === 'all') return true;
-    return order.status === filter;
-  });
+      // Fetch details for each transaction to get recipe information
+      const ordersWithDetails = await Promise.all(
+        transactions.map(async (transaction) => {
+          const detail = await getTransaction(transaction.id)
+          return {
+            id: detail.id,
+            totalAmount: detail.totalAmount,
+            status: detail.status,
+            paymentMethod: detail.paymentMethod,
+            createdAt: detail.createdAt,
+            adminNotes: detail.adminNotes,
+            items: detail.recipes || []
+          } as Order
+        })
+      )
+
+      setAllOrders(ordersWithDetails)
+    } catch (err) {
+      console.error('Failed to load orders:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load orders')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredOrders = allOrders.filter(order => {
+    if (filter === 'all') return true
+    return order.status === filter
+  })
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'status-paid';
-      case 'pending': return 'status-pending';
-      case 'cancelled': return 'status-cancelled';
-      case 'refunded': return 'status-refunded';
-      default: return '';
+      case 'verified': return 'status-paid'
+      case 'pending': return 'status-pending'
+      case 'rejected': return 'status-cancelled'
+      default: return ''
     }
-  };
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'paid': return 'fas fa-check-circle';
-      case 'pending': return 'fas fa-clock';
-      case 'cancelled': return 'fas fa-times-circle';
-      case 'refunded': return 'fas fa-undo';
-      default: return 'fas fa-question-circle';
+      case 'verified': return 'fas fa-check-circle'
+      case 'pending': return 'fas fa-clock'
+      case 'rejected': return 'fas fa-times-circle'
+      default: return 'fas fa-question-circle'
     }
-  };
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'verified': return 'Paid'
+      case 'pending': return 'Pending'
+      case 'rejected': return 'Rejected'
+      default: return status
+    }
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -84,8 +109,8 @@ function MyOrders() {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    });
-  };
+    })
+  }
 
   if (loading) {
     return (
@@ -95,7 +120,24 @@ function MyOrders() {
           <p>Loading your orders...</p>
         </div>
       </main>
-    );
+    )
+  }
+
+  if (error) {
+    return (
+      <main>
+        <div className="orders-container">
+          <div className="empty-orders">
+            <i className="fas fa-exclamation-triangle"></i>
+            <h3>Error loading orders</h3>
+            <p>{error}</p>
+            <button className="btn btn-primary" onClick={loadOrders}>
+              Try Again
+            </button>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -108,29 +150,29 @@ function MyOrders() {
 
         <div className="orders-filters">
           <div className="filter-tabs">
-            <button 
+            <button
               className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
               onClick={() => setFilter('all')}
             >
-              All Orders ({orders.length})
+              All Orders ({allOrders.length})
             </button>
-            <button 
-              className={`filter-tab ${filter === 'paid' ? 'active' : ''}`}
-              onClick={() => setFilter('paid')}
+            <button
+              className={`filter-tab ${filter === 'verified' ? 'active' : ''}`}
+              onClick={() => setFilter('verified')}
             >
-              Completed ({orders.filter(o => o.status === 'paid').length})
+              Completed ({allOrders.filter(o => o.status === 'verified').length})
             </button>
-            <button 
+            <button
               className={`filter-tab ${filter === 'pending' ? 'active' : ''}`}
               onClick={() => setFilter('pending')}
             >
-              Pending ({orders.filter(o => o.status === 'pending').length})
+              Pending ({allOrders.filter(o => o.status === 'pending').length})
             </button>
-            <button 
-              className={`filter-tab ${filter === 'cancelled' ? 'active' : ''}`}
-              onClick={() => setFilter('cancelled')}
+            <button
+              className={`filter-tab ${filter === 'rejected' ? 'active' : ''}`}
+              onClick={() => setFilter('rejected')}
             >
-              Cancelled ({orders.filter(o => o.status === 'cancelled').length})
+              Rejected ({allOrders.filter(o => o.status === 'rejected').length})
             </button>
           </div>
         </div>
@@ -141,7 +183,7 @@ function MyOrders() {
               <i className="fas fa-shopping-bag"></i>
               <h3>No orders found</h3>
               <p>
-                {filter === 'all' 
+                {filter === 'all'
                   ? "You haven't made any purchases yet. Start exploring our video recipes!"
                   : `No ${filter} orders found.`
                 }
@@ -152,10 +194,10 @@ function MyOrders() {
             </div>
           ) : (
             filteredOrders.map(order => (
-              <div key={order.orderId} className="order-card">
+              <div key={order.id} className="order-card">
                 <div className="order-header">
                   <div className="order-info">
-                    <h3>Order #{order.orderId}</h3>
+                    <h3>Order #{order.id}</h3>
                     <div className="order-meta">
                       <span className="order-date">
                         <i className="fas fa-calendar"></i>
@@ -165,16 +207,18 @@ function MyOrders() {
                         <i className="fas fa-dollar-sign"></i>
                         ${order.totalAmount.toFixed(2)}
                       </span>
-                      <span className="order-method">
-                        <i className="fas fa-credit-card"></i>
-                        {order.paymentMethod.charAt(0).toUpperCase() + order.paymentMethod.slice(1)}
-                      </span>
+                      {order.paymentMethod && (
+                        <span className="order-method">
+                          <i className="fas fa-credit-card"></i>
+                          {order.paymentMethod}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="order-status">
                     <span className={`status-badge ${getStatusColor(order.status)}`}>
                       <i className={getStatusIcon(order.status)}></i>
-                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      {getStatusLabel(order.status)}
                     </span>
                   </div>
                 </div>
@@ -183,30 +227,23 @@ function MyOrders() {
                   <h4>Purchased Items ({order.items.length})</h4>
                   <div className="items-grid">
                     {order.items.map(item => (
-                      <div key={item.orderItemId} className="order-item">
-                        <div className="item-thumbnail">
-                          <img src={item.videoThumbnail} alt={item.title} />
-                          <div className="play-overlay">
-                            <i className="fas fa-play"></i>
-                          </div>
-                        </div>
+                      <div key={item.recipeId} className="order-item">
                         <div className="item-details">
                           <h5>{item.title}</h5>
                           <div className="item-meta">
                             <span className="item-price">${item.price.toFixed(2)}</span>
-                            <span className="item-quantity">Qty: {item.quantity}</span>
                           </div>
                         </div>
                         <div className="item-actions">
-                          {order.status === 'paid' ? (
-                            <Link 
+                          {order.status === 'verified' ? (
+                            <Link
                               to={`/recipe-detail/${item.recipeId}`}
                               className="btn btn-primary btn-small"
                             >
                               <i className="fas fa-play"></i> Watch
                             </Link>
                           ) : (
-                            <button 
+                            <button
                               className="btn btn-outline btn-small"
                               disabled
                             >
@@ -220,9 +257,9 @@ function MyOrders() {
                 </div>
 
                 <div className="order-actions">
-                  {order.status === 'paid' && (
+                  {order.status === 'verified' && order.items.length > 0 && (
                     <div className="action-group">
-                      <Link 
+                      <Link
                         to={`/recipe-detail/${order.items[0].recipeId}`}
                         className="btn btn-primary"
                       >
@@ -232,19 +269,18 @@ function MyOrders() {
                   )}
                   {order.status === 'pending' && (
                     <div className="action-group">
-                      <button className="btn btn-primary">
-                        <i className="fas fa-credit-card"></i> Complete Payment
-                      </button>
-                      <button className="btn btn-outline">
-                        <i className="fas fa-times"></i> Cancel Order
-                      </button>
+                      <p className="pending-message">
+                        <i className="fas fa-info-circle"></i>
+                        Waiting for admin verification
+                      </p>
                     </div>
                   )}
-                  {order.status === 'cancelled' && (
+                  {order.status === 'rejected' && (
                     <div className="action-group">
-                      <button className="btn btn-outline">
-                        <i className="fas fa-redo"></i> Reorder
-                      </button>
+                      <p className="rejected-message">
+                        <i className="fas fa-exclamation-circle"></i>
+                        {order.adminNotes || 'Payment was rejected. Please contact support.'}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -252,33 +288,9 @@ function MyOrders() {
             ))
           )}
         </div>
-
-        <div className="orders-summary">
-          <div className="summary-card">
-            <h3>Order Summary</h3>
-            <div className="summary-stats">
-              <div className="stat-item">
-                <span className="stat-label">Total Orders</span>
-                <span className="stat-value">{orders.length}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Total Spent</span>
-                <span className="stat-value">
-                  ${orders.reduce((sum, order) => sum + order.totalAmount, 0).toFixed(2)}
-                </span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Recipes Purchased</span>
-                <span className="stat-value">
-                  {orders.reduce((sum, order) => sum + order.items.length, 0)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </main>
-  );
+  )
 }
 
-export default MyOrders;
+export default MyOrders
