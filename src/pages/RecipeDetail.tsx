@@ -9,12 +9,18 @@ import { isAuthenticated, getUserSession } from '../services/auth'
 import { addToCart } from '../services/cart'
 import { fetchMyRecipes } from '../services/recipes'
 
+type RecipeDetailLocationState = {
+  recipe?: Recipe
+} | null;
+
 function RecipeDetail() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const locationState = location.state as RecipeDetailLocationState;
+  const initialRecipe = locationState?.recipe ?? null;
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'ingredients' | 'instructions' | 'nutrition' | 'reviews'>('ingredients');
-  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [recipe, setRecipe] = useState<Recipe | null>(initialRecipe);
   const [loading, setLoading] = useState(true);
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [ratingsLoading, setRatingsLoading] = useState(false);
@@ -30,35 +36,57 @@ function RecipeDetail() {
     (async () => {
       try {
         if (!id) return;
-        // Try to fetch with auth first (for full details), fallback to public if not authenticated
+        // Try to fetch with auth first (for full details)
         let data = null;
+        let accessDenied = false;
         try {
           data = await fetchRecipeById(Number(id), true);
         } catch (authError) {
-          // If auth fails, try without auth (public overview)
-          try {
-            data = await fetchRecipeById(Number(id), false);
-          } catch (publicError) {
-            console.error('Failed to fetch recipe:', publicError);
+          const errorMessage = authError instanceof Error ? authError.message : String(authError);
+          // Check if it's an access denied error
+          if (errorMessage.toLowerCase().includes('access denied') || 
+              errorMessage.toLowerCase().includes('must purchase')) {
+            accessDenied = true;
+            // Try to fetch public overview (basic info like title, rating)
+            try {
+              data = await fetchRecipeById(Number(id), false);
+            } catch (publicError) {
+              console.error('Failed to fetch recipe:', publicError);
+            }
+          } else {
+            // Other auth errors, try public
+            try {
+              data = await fetchRecipeById(Number(id), false);
+            } catch (publicError) {
+              console.error('Failed to fetch recipe:', publicError);
+            }
           }
         }
         if (!cancelled) {
           if (data) {
             setRecipe(data);
+            if (accessDenied) {
+              setIsPurchased(false);
+            }
           } else {
-            // Fallback to FE sample data
-            const samples = getSampleRecipes();
-            const found = samples.find(r => r.id === Number(id)) || null;
-            setRecipe(found);
+            setRecipe(prev => {
+              if (prev) return prev;
+              const samples = getSampleRecipes();
+              return samples.find(r => r.id === Number(id)) || null;
+            });
           }
         }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('Failed to load recipe', e);
         // Fallback to FE sample data on error
-        const samples = getSampleRecipes();
-        const found = samples.find(r => r.id === Number(id)) || null;
-        if (!cancelled) setRecipe(found);
+        if (!cancelled) {
+          setRecipe(prev => {
+            if (prev) return prev;
+            const samples = getSampleRecipes();
+            return samples.find(r => r.id === Number(id)) || null;
+          });
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -94,8 +122,11 @@ function RecipeDetail() {
 
   // Check if recipe is purchased and fetch user's rating if authenticated
   useEffect(() => {
-    if (!id || !isAuthenticated()) {
-      setIsPurchased(false);
+    if (!id || !recipe || !isAuthenticated()) {
+      // If not authenticated or no recipe, set as not purchased
+      if (!isAuthenticated() || !recipe) {
+        setIsPurchased(false);
+      }
       return;
     }
     
@@ -135,7 +166,7 @@ function RecipeDetail() {
       }
     })();
     return () => { cancelled = true };
-  }, [id]);
+  }, [id, recipe]);
 
   const handleSubmitRating = async () => {
     if (!id) return;
@@ -409,6 +440,7 @@ function RecipeDetail() {
               <div className="recipe-video-section">
                 <YouTubePlayer
                   videoId={recipe.youtubeVideoId}
+                  thumbnail={recipe.videoThumbnail ?? undefined}
                   title={recipe.title}
                   width="100%"
                   height="400px"
@@ -429,7 +461,9 @@ function RecipeDetail() {
               </div>
               <div className="recipe-info">
                 <h1 className="recipe-title">{recipe.title}</h1>
-                <p className="recipe-description">{recipe.description}</p>
+                {recipe.description && (
+                  <p className="recipe-description">{recipe.description}</p>
+                )}
                 
                 <div className="recipe-meta">
                   <div className="meta-item">
@@ -485,57 +519,99 @@ function RecipeDetail() {
               {activeTab === 'ingredients' && (
                 <div className="ingredients-section">
                   <h3>Ingredients</h3>
-                  <div className="ingredients-grid">
-                    {(recipe.ingredients || []).map((ingredient, index) => (
-                      <div key={index} className="ingredient-item">
-                        <span className="ingredient-name">{ingredient.label}</span>
-                        <span className="ingredient-amount">
-                          {ingredient.quantity} {ingredient.measurement}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  {isPurchased ? (
+                    <div className="ingredients-grid">
+                      {(recipe.ingredients || []).map((ingredient, index) => (
+                        <div key={index} className="ingredient-item">
+                          <span className="ingredient-name">{ingredient.label}</span>
+                          <span className="ingredient-amount">
+                            {ingredient.quantity} {ingredient.measurement}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="locked-content">
+                      <i className="fas fa-lock"></i>
+                      <h4>Ingredients Locked</h4>
+                      <p>Purchase this recipe to view the complete ingredient list</p>
+                      <button
+                        className="btn btn-primary"
+                        onClick={handlePurchase}
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
               {activeTab === 'instructions' && (
                 <div className="instructions-section">
                   <h3>Step-by-Step Instructions</h3>
-                  <div className="instructions-list">
-                    {(recipe.instructions || []).map((instruction, index) => (
-                      <div key={index} className="instruction-item">
-                        <div className="instruction-number">{instruction.step}</div>
-                        <div className="instruction-content">{instruction.content}</div>
-                      </div>
-                    ))}
-                  </div>
+                  {isPurchased ? (
+                    <div className="instructions-list">
+                      {(recipe.instructions || []).map((instruction, index) => (
+                        <div key={index} className="instruction-item">
+                          <div className="instruction-number">{instruction.step}</div>
+                          <div className="instruction-content">{instruction.content}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="locked-content">
+                      <i className="fas fa-lock"></i>
+                      <h4>Instructions Locked</h4>
+                      <p>Purchase this recipe to view step-by-step cooking instructions</p>
+                      <button
+                        className="btn btn-primary"
+                        onClick={handlePurchase}
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
               {activeTab === 'nutrition' && (
                 <div className="nutrition-section">
                   <h3>Nutrition Information</h3>
-                  {recipe.nutrition && recipe.nutrition.length > 0 ? (
-                    <>
-                      <div className="nutrition-grid">
-                        {recipe.nutrition.map((nutrient, index) => (
-                          <div key={index} className="nutrition-item">
-                            <span className="nutrition-label">
-                              {nutrient.type.charAt(0).toUpperCase() + nutrient.type.slice(1)}
-                            </span>
-                            <span className="nutrition-value">
-                              {nutrient.quantity} {nutrient.measurement}
-                            </span>
-                          </div>
-                        ))}
+                  {isPurchased ? (
+                    recipe.nutrition && recipe.nutrition.length > 0 ? (
+                      <>
+                        <div className="nutrition-grid">
+                          {recipe.nutrition.map((nutrient, index) => (
+                            <div key={index} className="nutrition-item">
+                              <span className="nutrition-label">
+                                {nutrient.type.charAt(0).toUpperCase() + nutrient.type.slice(1)}
+                              </span>
+                              <span className="nutrition-value">
+                                {nutrient.quantity} {nutrient.measurement}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="nutrition-note">*Nutrition information is per serving</p>
+                      </>
+                    ) : (
+                      <div className="no-results" style={{padding: '3rem 1rem', textAlign: 'center'}}>
+                        <i className="fas fa-chart-pie" style={{fontSize: '3rem', color: '#9CA3AF', marginBottom: '1rem'}}></i>
+                        <h3>No nutrition information available</h3>
+                        <p>Nutrition information has not been provided for this recipe.</p>
                       </div>
-                      <p className="nutrition-note">*Nutrition information is per serving</p>
-                    </>
+                    )
                   ) : (
-                    <div className="no-results" style={{padding: '3rem 1rem', textAlign: 'center'}}>
-                      <i className="fas fa-chart-pie" style={{fontSize: '3rem', color: '#9CA3AF', marginBottom: '1rem'}}></i>
-                      <h3>No nutrition information available</h3>
-                      <p>Nutrition information has not been provided for this recipe.</p>
+                    <div className="locked-content">
+                      <i className="fas fa-lock"></i>
+                      <h4>Nutrition Information Locked</h4>
+                      <p>Purchase this recipe to view detailed nutrition information</p>
+                      <button
+                        className="btn btn-primary"
+                        onClick={handlePurchase}
+                      >
+                        Add to Cart
+                      </button>
                     </div>
                   )}
                 </div>
@@ -561,8 +637,8 @@ function RecipeDetail() {
                     </div>
                   </div>
 
-                  {/* Rating Form - Show if authenticated and (no rating exists or editing) */}
-                  {isAuthenticated() && (!myRating || isEditingRating) && (
+                  {/* Rating Form - Show if authenticated, purchased, and (no rating exists or editing) */}
+                  {isAuthenticated() && isPurchased && (!myRating || isEditingRating) && (
                     <div className="rating-form" style={{
                       background: '#F9FAFB',
                       padding: '1.5rem',
@@ -643,7 +719,55 @@ function RecipeDetail() {
                   )}
 
                   {/* My Rating Display (when not editing) */}
-                  {isAuthenticated() && myRating && !isEditingRating && (
+                  {/* Show message if authenticated but not purchased */}
+                  {isAuthenticated() && !isPurchased && (
+                    <div className="rating-message" style={{
+                      background: '#FEF3C7',
+                      padding: '1.5rem',
+                      borderRadius: '8px',
+                      marginBottom: '2rem',
+                      border: '1px solid #FCD34D',
+                      textAlign: 'center'
+                    }}>
+                      <i className="fas fa-lock" style={{fontSize: '2rem', color: '#F59E0B', marginBottom: '0.5rem'}}></i>
+                      <h4 style={{marginBottom: '0.5rem', color: '#92400E'}}>Purchase Required</h4>
+                      <p style={{color: '#78350F', marginBottom: '1rem'}}>
+                        You need to purchase this recipe to leave a rating and review.
+                      </p>
+                      <button
+                        className="btn btn-primary"
+                        onClick={handlePurchase}
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Show message if not authenticated */}
+                  {!isAuthenticated() && (
+                    <div className="rating-message" style={{
+                      background: '#F3F4F6',
+                      padding: '1.5rem',
+                      borderRadius: '8px',
+                      marginBottom: '2rem',
+                      border: '1px solid #D1D5DB',
+                      textAlign: 'center'
+                    }}>
+                      <i className="fas fa-sign-in-alt" style={{fontSize: '2rem', color: '#6B7280', marginBottom: '0.5rem'}}></i>
+                      <h4 style={{marginBottom: '0.5rem', color: '#374151'}}>Sign In Required</h4>
+                      <p style={{color: '#6B7280', marginBottom: '1rem'}}>
+                        Please sign in and purchase this recipe to leave a rating and review.
+                      </p>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => navigate('/login')}
+                      >
+                        Sign In
+                      </button>
+                    </div>
+                  )}
+
+                  {isAuthenticated() && isPurchased && myRating && !isEditingRating && (
                     <div className="my-rating" style={{
                       background: '#EFF6FF',
                       padding: '1rem',

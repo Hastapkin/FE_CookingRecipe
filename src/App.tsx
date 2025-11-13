@@ -9,6 +9,7 @@ import Checkout from './pages/Checkout'
 import CheckoutSuccess from './pages/CheckoutSuccess'
 import MyOrders from './pages/MyOrders'
 import MyRecipes from './pages/MyRecipes'
+import ProfilePicture from './pages/ProfilePicture'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import NotFound from './pages/NotFound'
@@ -29,6 +30,7 @@ function App() {
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/my-recipes" element={<MyRecipes />} />
+          <Route path="/profile-picture" element={<ProfilePicture />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />

@@ -42,6 +42,23 @@ export async function getProfile(): Promise<User> {
   return response.user
 }
 
+export interface UploadProfilePictureResponse {
+  success: boolean
+  message: string
+  data: {
+    imageUrl: string
+    publicId: string
+  }
+}
+
+export async function uploadProfilePicture(file: File): Promise<UploadProfilePictureResponse> {
+  const { apiPostFormData } = await import('./api')
+  const formData = new FormData()
+  formData.append('image', file) // Backend expects 'image' field name
+  const response = await apiPostFormData<UploadProfilePictureResponse>('/images/profile', formData, true)
+  return response
+}
+
 // Helper functions for managing user session
 export function saveUserSession(user: User, token: string): void {
   localStorage.setItem('user', JSON.stringify({ ...user, token }))

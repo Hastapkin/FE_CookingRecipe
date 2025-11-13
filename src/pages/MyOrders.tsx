@@ -115,9 +115,18 @@ function MyOrders() {
   if (loading) {
     return (
       <main>
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading your orders...</p>
+        <section className="page-header">
+          <div className="container">
+            <h1 className="page-title">My Orders</h1>
+            <p className="page-subtitle">Track and manage your video recipe purchases</p>
+          </div>
+        </section>
+
+        <div className="orders-container">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading your orders...</p>
+          </div>
         </div>
       </main>
     )
@@ -126,6 +135,13 @@ function MyOrders() {
   if (error) {
     return (
       <main>
+        <section className="page-header">
+          <div className="container">
+            <h1 className="page-title">My Orders</h1>
+            <p className="page-subtitle">Track and manage your video recipe purchases</p>
+          </div>
+        </section>
+
         <div className="orders-container">
           <div className="empty-orders">
             <i className="fas fa-exclamation-triangle"></i>
@@ -142,11 +158,14 @@ function MyOrders() {
 
   return (
     <main>
-      <div className="orders-container">
-        <div className="orders-header">
-          <h1>My Orders</h1>
-          <p>Track and manage your video recipe purchases</p>
+      <section className="page-header">
+        <div className="container">
+          <h1 className="page-title">My Orders</h1>
+          <p className="page-subtitle">Track and manage your video recipe purchases</p>
         </div>
+      </section>
+
+      <div className="orders-container">
 
         <div className="orders-filters">
           <div className="filter-tabs">

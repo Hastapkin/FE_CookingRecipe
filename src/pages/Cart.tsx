@@ -87,6 +87,13 @@ function Cart() {
   if (cartItems.length === 0) {
     return (
       <main>
+        <section className="page-header">
+          <div className="container">
+            <h1 className="page-title">Shopping Cart</h1>
+            <p className="page-subtitle">Review your selected video recipes</p>
+          </div>
+        </section>
+
         <div className="checkout-container">
           <div className="empty-cart">
             <i className="fas fa-shopping-cart"></i>
@@ -106,10 +113,14 @@ function Cart() {
 
   return (
     <main>
-      <div className="checkout-container">
-        <div className="checkout-header">
-          <h1>Shopping Cart</h1>
+      <section className="page-header">
+        <div className="container">
+          <h1 className="page-title">Shopping Cart</h1>
+          <p className="page-subtitle">Review your selected video recipes</p>
         </div>
+      </section>
+
+      <div className="checkout-container">
 
         <div className="checkout-content">
           <div className="checkout-form-section" style={{ flex: '1 1 100%' }}>

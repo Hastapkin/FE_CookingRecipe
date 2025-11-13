@@ -4,14 +4,13 @@ import { useState, useEffect } from 'react'
 import VideoPreview from '../components/VideoPreview'
 import PriceButton from '../components/PriceButton'
 import type { Recipe } from '../types/recipe'
-import { fetchRecipes, fetchMyRecipes } from '../services/recipes'
+import { fetchRecipes } from '../services/recipes'
 import { addToCart } from '../services/cart'
 import { isAuthenticated } from '../services/auth'
 
 function Recipes() {
   const navigate = useNavigate();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [purchasedRecipeIds, setPurchasedRecipeIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
@@ -107,31 +106,6 @@ function Recipes() {
     return () => { cancelled = true };
   }, [filters.search, filters.difficulty, filters.time, filters.sortBy, currentPage]);
 
-  // Load purchased recipes when authenticated
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      setPurchasedRecipeIds(new Set());
-      return;
-    }
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const myRecipes = await fetchMyRecipes({ limit: 1000 }); // Get all purchased recipes
-        if (!cancelled) {
-          const purchasedIds = new Set(myRecipes.recipes.map(r => r.id));
-          setPurchasedRecipeIds(purchasedIds);
-        }
-      } catch (error) {
-        console.error('Failed to load purchased recipes:', error);
-        if (!cancelled) {
-          setPurchasedRecipeIds(new Set());
-        }
-      }
-    })();
-    return () => { cancelled = true };
-  }, []);
-
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
@@ -155,6 +129,10 @@ function Recipes() {
   return (
     <main>
       <section className="page-header">
+        <div className="container">
+          <h1 className="page-title">Video Recipes</h1>
+          <p className="page-subtitle">Discover amazing cooking tutorials from professional chefs</p>
+        </div>
       </section>
 
       <section className="search-filter">
@@ -244,36 +222,9 @@ function Recipes() {
                       <div className="recipe-badge">{recipe.category}</div>
                       <div className="recipe-overlay">
                         <button 
-                          onClick={async (e) => {
+                          onClick={(e) => {
                             e.preventDefault();
-                            if (!isAuthenticated()) {
-                              navigate('/login');
-                              return;
-                            }
-                            
-                            // Check if user owns the recipe
-                            if (purchasedRecipeIds.has(recipe.id)) {
-                              navigate(`/recipe-detail/${recipe.id}`);
-                              return;
-                            }
-                            
-                            // If not owned, add to cart and go to cart page
-                            try {
-                              await addToCart(recipe.id);
-                              navigate('/cart');
-                            } catch (error) {
-                              const errorMessage = error instanceof Error ? error.message : String(error);
-                              // Check if item is already in cart
-                              if (errorMessage.toLowerCase().includes('already') || 
-                                  errorMessage.toLowerCase().includes('duplicate') ||
-                                  errorMessage.toLowerCase().includes('exists')) {
-                                alert('Item is already in cart');
-                                navigate('/cart');
-                              } else {
-                                console.error('Failed to add to cart', error);
-                                alert('Failed to add recipe to cart. Please try again.');
-                              }
-                            }
+                            navigate(`/recipe-detail/${recipe.id}`, { state: { recipe } });
                           }}
                           className="btn btn-small"
                         >

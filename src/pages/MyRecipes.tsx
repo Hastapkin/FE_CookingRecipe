@@ -113,8 +113,8 @@ function MyRecipes() {
     <main>
       <section className="page-header">
         <div className="container">
-          <h1>My Purchased Recipes</h1>
-          <p>Access all your purchased video recipes</p>
+          <h1 className="page-title">My Purchased Recipes</h1>
+          <p className="page-subtitle">Access all your purchased video recipes</p>
         </div>
       </section>
 
@@ -218,11 +218,11 @@ function MyRecipes() {
                             thumbnail={recipe.videoThumbnail ?? undefined}
                             duration={`${Math.floor(recipe.cookingTime / 60)}:${(recipe.cookingTime % 60).toString().padStart(2, '0')}`}
                             height="200px"
-                            onPlay={() => navigate(`/recipe-detail/${recipe.id}`)}
+                            onPlay={() => navigate(`/recipe-detail/${recipe.id}`, { state: { recipe } })}
                           />
                           <div className="recipe-badge">{recipe.category}</div>
                           <div className="recipe-overlay">
-                            <Link to={`/recipe-detail/${recipe.id}`} className="btn btn-small">
+                            <Link to={`/recipe-detail/${recipe.id}`} state={{ recipe }} className="btn btn-small">
                               <i className="fas fa-play"></i> Watch Recipe
                             </Link>
                           </div>
@@ -270,9 +270,6 @@ function MyRecipes() {
                             >
                               <i className="fas fa-play"></i> Watch Recipe
                             </Link>
-                            <div className="recipe-author">
-                              <span className="author-name">by {recipe.createdBy || 'Chef'}</span>
-                            </div>
                           </div>
                         </div>
                       </div>
