@@ -1,54 +1,35 @@
-BÚN CHẢ
-
-Ingredients
-Pork belly (for grilling, with both lean and fat parts)
-
-Ground pork (for pork patties)
-
-Shallots and garlic
-
-Fish sauce (recommended: high-quality "nước mắm cốt")
-
-Sugar, pepper, oyster sauce
-
-Vermicelli noodles (bún)
-
-Mixed herbs (lettuce, perilla, peppermint, coriander)
-
-Pickled green papaya and carrots
-
-Dipping sauce ingredients: fish sauce, broth, sugar, garlic, chili, lime
-
-Instructions
-Prepare the Pork
-Slice the pork belly thinly for grilling.
-
-For the patties, season the ground pork with shallots, garlic, fish sauce, oyster sauce, and pepper.
-
-Marinate both pork belly slices and ground pork for at least 1 hour for better flavor.
-
-Shape the ground pork mixture into small round patties.
-
-Grill the Meat
-Use a charcoal grill for authentic flavor (preferable over an oven or air fryer).
-
-Grill both the pork belly slices and patties until golden and slightly charred on the outside.
-
-Make the Dipping Sauce
-Mix fish sauce, a bit of broth, sugar, minced garlic, chopped chili, and lime. Adjust sweet, sour, salty flavors to your liking.
-
-Add the pickled carrots and green papaya.
-
-Assemble the Dish
-Serve grilled meat and patties separately or together.
-
-Add a portion of vermicelli noodles to a bowl, along with fresh herbs.
-
-Pour some dipping sauce with pickles over, and dip the meat as you eat.
-
-Notes
-Using a charcoal grill gives the best taste, creating the signature smokiness of authentic bún chả.
-
-Adjust the dipping sauce ingredients according to your taste.
-
-Prioritize a good-quality fish sauce, as it determines the quality of the dish.
+{
+  "title": "Bún Chả",
+  "description": "Vietnamese grilled pork served with vermicelli noodles, fresh herbs, and a tangy dipping sauce.",
+  "videoUrl": "https://www.youtube.com/watch?v=V37douhyx_0",
+  "price": 9.99,
+  "difficulty": "medium",
+  "cookingTime": 120,
+  "servings": 4,
+  "category": "Vietnamese",
+  "ingredients": [
+    { "label": "Pork belly (for grilling, with both lean and fat parts)", "quantity": null, "measurement": "" },
+    { "label": "Ground pork (for pork patties)", "quantity": null, "measurement": "" },
+    { "label": "Shallots and garlic", "quantity": null, "measurement": "" },
+    { "label": "Fish sauce", "quantity": null, "measurement": "" },
+    { "label": "Sugar", "quantity": null, "measurement": "" },
+    { "label": "Pepper", "quantity": null, "measurement": "" },
+    { "label": "Oyster sauce", "quantity": null, "measurement": "" },
+    { "label": "Vermicelli noodles (bún)", "quantity": null, "measurement": "" },
+    { "label": "Mixed herbs (lettuce, perilla, peppermint, coriander)", "quantity": null, "measurement": "" },
+    { "label": "Pickled green papaya and carrots", "quantity": null, "measurement": "" },
+    { "label": "Fish sauce (for dipping sauce)", "quantity": null, "measurement": "" },
+    { "label": "Broth", "quantity": null, "measurement": "" },
+    { "label": "Garlic (for dipping sauce)", "quantity": null, "measurement": "" },
+    { "label": "Chili", "quantity": null, "measurement": "" },
+    { "label": "Lime", "quantity": null, "measurement": "" }
+  ],
+  "instructions": [
+    { "step": 1, "content": "Slice the pork belly thinly and season the ground pork with aromatics, fish sauce, oyster sauce, and pepper. Marinate both for at least one hour." },
+    { "step": 2, "content": "Shape the seasoned ground pork into small patties for grilling." },
+    { "step": 3, "content": "Grill the pork belly slices and patties over charcoal until golden and slightly charred." },
+    { "step": 4, "content": "Mix fish sauce, broth, sugar, minced garlic, chopped chili, and lime juice to create the dipping sauce. Add pickled carrots and papaya." },
+    { "step": 5, "content": "Arrange vermicelli noodles and fresh herbs in bowls. Serve with grilled meats and the dipping sauce for dunking." }
+  ],
+  "nutrition": []
+}

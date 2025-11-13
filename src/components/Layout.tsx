@@ -13,6 +13,8 @@ function Layout() {
   const infoDropdownRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
+  const isAdmin = (currentUser?.role || '').toLowerCase() === 'admin'
+
   const updateUser = async () => {
     const session = getUserSession()
     if (session) {
@@ -22,7 +24,7 @@ function Layout() {
         setCurrentUser(profile)
         // Update session with fresh data
         if (session.token) {
-          const updatedSession = { ...session, user: profile }
+          const updatedSession = { ...profile, token: session.token }
           localStorage.setItem('user', JSON.stringify(updatedSession))
         }
       } catch (error) {
@@ -99,106 +101,106 @@ function Layout() {
             </div>
             
             <ul className={`nav-menu ${mobileMenuOpen ? 'mobile-active' : ''}`}>
-              <li className="nav-item">
-                <NavLink 
-                  to="/" 
-                  end 
-                  className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <i className="fas fa-home"></i>
-                  <span>Home</span>
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink 
-                  to="/recipes" 
-                  className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <i className="fas fa-book-open"></i>
-                  <span>Recipes</span>
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <div className="dropdown-container" ref={infoDropdownRef}>
-                  <button 
-                    className="nav-link dropdown-toggle"
-                    onClick={() => setInfoDropdownOpen(!infoDropdownOpen)}
-                  >
-                    <i className="fas fa-info-circle"></i>
-                    <span>Info</span>
-                    <i className={`fas fa-chevron-${infoDropdownOpen ? 'up' : 'down'} dropdown-arrow`}></i>
-                  </button>
-                  {infoDropdownOpen && (
-                    <div className="dropdown-menu">
-                      <NavLink 
-                        to="/about" 
-                        className="dropdown-item"
-                        onClick={() => {
-                          setInfoDropdownOpen(false)
-                          setMobileMenuOpen(false)
-                        }}
+              {isAdmin ? (
+                <>
+                  <li className="nav-item">
+                    <NavLink
+                      to="/admin/recipes"
+                      end
+                      className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
+                      onClick={() => {
+                        setMobileMenuOpen(false)
+                        setDropdownOpen(false)
+                        setInfoDropdownOpen(false)
+                      }}
+                    >
+                      <i className="fas fa-book-open"></i>
+                      <span>Recipes</span>
+                    </NavLink>
+                  </li>
+                  <li className="nav-item">
+                    <NavLink
+                      to="/admin/recipes/new"
+                      className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
+                      onClick={() => {
+                        setMobileMenuOpen(false)
+                        setDropdownOpen(false)
+                        setInfoDropdownOpen(false)
+                      }}
+                    >
+                      <i className="fas fa-plus-circle"></i>
+                      <span>Add Recipe</span>
+                    </NavLink>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="nav-item">
+                    <NavLink 
+                      to="/" 
+                      end 
+                      className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <i className="fas fa-home"></i>
+                      <span>Home</span>
+                    </NavLink>
+                  </li>
+                  <li className="nav-item">
+                    <NavLink 
+                      to="/recipes" 
+                      className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <i className="fas fa-book-open"></i>
+                      <span>Recipes</span>
+                    </NavLink>
+                  </li>
+                  <li className="nav-item">
+                    <div className="dropdown-container" ref={infoDropdownRef}>
+                      <button 
+                        className="nav-link dropdown-toggle"
+                        onClick={() => setInfoDropdownOpen(!infoDropdownOpen)}
                       >
                         <i className="fas fa-info-circle"></i>
-                        <span>About</span>
-                      </NavLink>
-                      <NavLink 
-                        to="/contact" 
-                        className="dropdown-item"
-                        onClick={() => {
-                          setInfoDropdownOpen(false)
-                          setMobileMenuOpen(false)
-                        }}
-                      >
-                        <i className="fas fa-envelope"></i>
-                        <span>Contact</span>
-                      </NavLink>
+                        <span>Info</span>
+                        <i className={`fas fa-chevron-${infoDropdownOpen ? 'up' : 'down'} dropdown-arrow`}></i>
+                      </button>
+                      {infoDropdownOpen && (
+                        <div className="dropdown-menu">
+                          <NavLink 
+                            to="/about" 
+                            className="dropdown-item"
+                            onClick={() => {
+                              setInfoDropdownOpen(false)
+                              setMobileMenuOpen(false)
+                            }}
+                          >
+                            <i className="fas fa-info-circle"></i>
+                            <span>About</span>
+                          </NavLink>
+                          <NavLink 
+                            to="/contact" 
+                            className="dropdown-item"
+                            onClick={() => {
+                              setInfoDropdownOpen(false)
+                              setMobileMenuOpen(false)
+                            }}
+                          >
+                            <i className="fas fa-envelope"></i>
+                            <span>Contact</span>
+                          </NavLink>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </li>
+                  </li>
+                </>
+              )}
             </ul>
             
             <div className={`nav-auth ${mobileMenuOpen ? 'mobile-active' : ''}`}>
               {currentUser ? (
-                <>
-                  <div className="dropdown-container" ref={dropdownRef}>
-                    <button 
-                      className="btn btn-outline dropdown-toggle"
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
-                    >
-                      <i className="fas fa-shopping-bag"></i>
-                      <span className="hide-sm">Orders</span>
-                      <i className={`fas fa-chevron-${dropdownOpen ? 'up' : 'down'} dropdown-arrow`}></i>
-                    </button>
-                    {dropdownOpen && (
-                      <div className="dropdown-menu">
-                        <NavLink 
-                          to="/cart" 
-                          className="dropdown-item"
-                          onClick={() => {
-                            setDropdownOpen(false)
-                            setMobileMenuOpen(false)
-                          }}
-                        >
-                          <i className="fas fa-shopping-cart"></i>
-                          <span>Cart</span>
-                        </NavLink>
-                        <NavLink 
-                          to="/my-orders" 
-                          className="dropdown-item"
-                          onClick={() => {
-                            setDropdownOpen(false)
-                            setMobileMenuOpen(false)
-                          }}
-                        >
-                          <i className="fas fa-receipt"></i>
-                          <span>My Orders</span>
-                        </NavLink>
-                      </div>
-                    )}
-                  </div>
+                isAdmin ? (
                   <div className="dropdown-container user-dropdown-container" ref={userDropdownRef}>
                     <button 
                       className="btn btn-outline user-dropdown-toggle"
@@ -235,17 +237,6 @@ function Layout() {
                           <span className="dropdown-username">{currentUser.username}</span>
                         </div>
                         <NavLink 
-                          to="/my-recipes" 
-                          className="dropdown-item"
-                          onClick={() => {
-                            setUserDropdownOpen(false)
-                            setMobileMenuOpen(false)
-                          }}
-                        >
-                          <i className="fas fa-book"></i>
-                          <span>My Recipes</span>
-                        </NavLink>
-                        <NavLink 
                           to="/profile-picture" 
                           className="dropdown-item"
                           onClick={() => {
@@ -266,7 +257,113 @@ function Layout() {
                       </div>
                     )}
                   </div>
-                </>
+                ) : (
+                  <>
+                    <div className="dropdown-container" ref={dropdownRef}>
+                      <button 
+                        className="btn btn-outline dropdown-toggle"
+                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                      >
+                        <i className="fas fa-shopping-bag"></i>
+                        <span className="hide-sm">Orders</span>
+                        <i className={`fas fa-chevron-${dropdownOpen ? 'up' : 'down'} dropdown-arrow`}></i>
+                      </button>
+                      {dropdownOpen && (
+                        <div className="dropdown-menu">
+                          <NavLink 
+                            to="/cart" 
+                            className="dropdown-item"
+                            onClick={() => {
+                              setDropdownOpen(false)
+                              setMobileMenuOpen(false)
+                            }}
+                          >
+                            <i className="fas fa-shopping-cart"></i>
+                            <span>Cart</span>
+                          </NavLink>
+                          <NavLink 
+                            to="/my-orders" 
+                            className="dropdown-item"
+                            onClick={() => {
+                              setDropdownOpen(false)
+                              setMobileMenuOpen(false)
+                            }}
+                          >
+                            <i className="fas fa-receipt"></i>
+                            <span>My Orders</span>
+                          </NavLink>
+                        </div>
+                      )}
+                    </div>
+                    <div className="dropdown-container user-dropdown-container" ref={userDropdownRef}>
+                      <button 
+                        className="btn btn-outline user-dropdown-toggle"
+                        onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                      >
+                        {currentUser.profilePicture ? (
+                          <img 
+                            src={currentUser.profilePicture} 
+                            alt={currentUser.username}
+                            className="user-avatar"
+                          />
+                        ) : (
+                          <div className="user-avatar-placeholder">
+                            <i className="fas fa-user"></i>
+                          </div>
+                        )}
+                        <span className="hide-sm">{currentUser.username}</span>
+                        <i className={`fas fa-chevron-${userDropdownOpen ? 'up' : 'down'} dropdown-arrow`}></i>
+                      </button>
+                      {userDropdownOpen && (
+                        <div className="dropdown-menu user-dropdown-menu">
+                          <div className="dropdown-header">
+                            {currentUser.profilePicture ? (
+                              <img 
+                                src={currentUser.profilePicture} 
+                                alt={currentUser.username}
+                                className="dropdown-avatar"
+                              />
+                            ) : (
+                              <div className="dropdown-avatar-placeholder">
+                                <i className="fas fa-user"></i>
+                              </div>
+                            )}
+                            <span className="dropdown-username">{currentUser.username}</span>
+                          </div>
+                          <NavLink 
+                            to="/my-recipes" 
+                            className="dropdown-item"
+                            onClick={() => {
+                              setUserDropdownOpen(false)
+                              setMobileMenuOpen(false)
+                            }}
+                          >
+                            <i className="fas fa-book"></i>
+                            <span>My Recipes</span>
+                          </NavLink>
+                          <NavLink 
+                            to="/profile-picture" 
+                            className="dropdown-item"
+                            onClick={() => {
+                              setUserDropdownOpen(false)
+                              setMobileMenuOpen(false)
+                            }}
+                          >
+                            <i className="fas fa-camera"></i>
+                            <span>Change Profile Picture</span>
+                          </NavLink>
+                          <button
+                            className="dropdown-item dropdown-item-danger"
+                            onClick={handleLogout}
+                          >
+                            <i className="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )
               ) : (
                 <>
                   <div className="dropdown-container" ref={dropdownRef}>

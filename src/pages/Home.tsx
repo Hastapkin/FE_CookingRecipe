@@ -2,7 +2,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { addToCart } from '../services/cart'
-import { isAuthenticated } from '../services/auth'
+import { isAuthenticated, getUserSession } from '../services/auth'
 import YouTubePlayer from '../components/YouTubePlayer'
 import VideoPreview from '../components/VideoPreview'
 import PriceButton from '../components/PriceButton'
@@ -12,6 +12,13 @@ import type { Recipe } from '../types/recipe'
 function Home() {
   const navigate = useNavigate()
   const [featuredRecipes, setFeaturedRecipes] = useState<Recipe[]>([])
+
+  useEffect(() => {
+    const session = getUserSession()
+    if ((session?.user.role || '').toLowerCase() === 'admin') {
+      navigate('/admin/recipes')
+    }
+  }, [navigate])
 
   useEffect(() => {
     loadFeaturedRecipes()

@@ -30,12 +30,20 @@ function RecipeDetail() {
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [isPurchased, setIsPurchased] = useState(false);
   const autoplay = new URLSearchParams(location.search).get('autoplay') === '1';
+  const session = getUserSession();
+  const isAdmin = (session?.user.role || '').toLowerCase() === 'admin';
 
   useEffect(() => {
+    if (isAdmin && id) {
+      navigate(`/admin/recipes/${id}`);
+    }
+  }, [id, isAdmin, navigate]);
+
+  useEffect(() => {
+    if (!id || isAdmin) return;
     let cancelled = false;
     (async () => {
       try {
-        if (!id) return;
         // Try to fetch with auth first (for full details)
         let data = null;
         let accessDenied = false;
@@ -92,11 +100,11 @@ function RecipeDetail() {
       }
     })();
     return () => { cancelled = true };
-  }, [id]);
+  }, [id, isAdmin]);
 
   // Fetch ratings when reviews tab is active or recipe is loaded
   useEffect(() => {
-    if (!id || !recipe) return;
+    if (!id || !recipe || isAdmin) return;
     
     let cancelled = false;
     (async () => {
@@ -118,11 +126,11 @@ function RecipeDetail() {
       }
     })();
     return () => { cancelled = true };
-  }, [id, recipe]);
+  }, [id, isAdmin, recipe]);
 
   // Check if recipe is purchased and fetch user's rating if authenticated
   useEffect(() => {
-    if (!id || !recipe || !isAuthenticated()) {
+    if (!id || !recipe || isAdmin) {
       // If not authenticated or no recipe, set as not purchased
       if (!isAuthenticated() || !recipe) {
         setIsPurchased(false);
@@ -166,7 +174,7 @@ function RecipeDetail() {
       }
     })();
     return () => { cancelled = true };
-  }, [id, recipe]);
+  }, [id, isAdmin, recipe]);
 
   const handleSubmitRating = async () => {
     if (!id) return;
@@ -377,8 +385,15 @@ function RecipeDetail() {
       return;
     }
 
+    if (isAdmin) {
+      alert('Admins manage recipes through the admin dashboard and cannot purchase recipes.');
+      return;
+    }
+
     try {
       await addToCart(recipe.id);
+      alert('Recipe added to cart successfully!');
+      navigate('/cart');
       // Stay on page to continue browsing
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -530,6 +545,18 @@ function RecipeDetail() {
                         </div>
                       ))}
                     </div>
+                  ) : isAdmin ? (
+                    <div className="locked-content">
+                      <i className="fas fa-lock"></i>
+                      <h4>Admin Access</h4>
+                      <p>Admins manage recipes through the admin dashboard.</p>
+                      <button
+                        className="btn btn-outline"
+                        onClick={() => navigate(`/admin/recipes/${recipe.id}`)}
+                      >
+                        Go to Admin Detail
+                      </button>
+                    </div>
                   ) : (
                     <div className="locked-content">
                       <i className="fas fa-lock"></i>
@@ -557,6 +584,18 @@ function RecipeDetail() {
                           <div className="instruction-content">{instruction.content}</div>
                         </div>
                       ))}
+                    </div>
+                  ) : isAdmin ? (
+                    <div className="locked-content">
+                      <i className="fas fa-lock"></i>
+                      <h4>Admin Access</h4>
+                      <p>Admins manage recipes through the admin dashboard.</p>
+                      <button
+                        className="btn btn-outline"
+                        onClick={() => navigate(`/admin/recipes/${recipe.id}`)}
+                      >
+                        Go to Admin Detail
+                      </button>
                     </div>
                   ) : (
                     <div className="locked-content">
@@ -601,6 +640,18 @@ function RecipeDetail() {
                         <p>Nutrition information has not been provided for this recipe.</p>
                       </div>
                     )
+                  ) : isAdmin ? (
+                    <div className="locked-content">
+                      <i className="fas fa-lock"></i>
+                      <h4>Admin Access</h4>
+                      <p>Admins manage recipes through the admin dashboard.</p>
+                      <button
+                        className="btn btn-outline"
+                        onClick={() => navigate(`/admin/recipes/${recipe.id}`)}
+                      >
+                        Go to Admin Detail
+                      </button>
+                    </div>
                   ) : (
                     <div className="locked-content">
                       <i className="fas fa-lock"></i>

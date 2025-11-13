@@ -6,7 +6,7 @@ import PriceButton from '../components/PriceButton'
 import type { Recipe } from '../types/recipe'
 import { fetchRecipes } from '../services/recipes'
 import { addToCart } from '../services/cart'
-import { isAuthenticated } from '../services/auth'
+import { isAuthenticated, getUserSession } from '../services/auth'
 
 function Recipes() {
   const navigate = useNavigate();
@@ -27,6 +27,13 @@ function Recipes() {
     sortBy: 'newest',
     search: ''
   });
+
+  useEffect(() => {
+    const session = getUserSession()
+    if ((session?.user.role || '').toLowerCase() === 'admin') {
+      navigate('/admin/recipes')
+    }
+  }, [navigate])
 
   useEffect(() => {
     let cancelled = false;

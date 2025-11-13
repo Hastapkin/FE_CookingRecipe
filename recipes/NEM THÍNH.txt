@@ -1,28 +1,29 @@
-NEM THÍNH
-
-Ingredients
-Pork (boiled and thinly sliced)
-
-Pork skin (chewy, thinly sliced)
-
-Toasted rice powder (thính gạo rang) — golden and fragrant, key to the dish's flavor
-
-Fresh herbs: fig leaves, lime leaves, Thai basil, spearmint
-
-Dipping sauce made with fish sauce, garlic, and chili
-
-Preparation
-Boil pork until tender, then slice thinly.
-
-Thinly slice pork skin to add chewy texture.
-
-Coat pork slices generously with toasted rice powder, which provides a nutty aroma and crispiness.
-
-Serve with fresh herbs that refresh and balance the rich flavors.
-
-Accompany with a flavorful dipping sauce blending fish sauce, garlic, and chili to enhance taste.
-
-Cultural Context
-Nem Thính﻿ is cherished as a traditional Vietnamese snack, combining unique textures and harmonious flavors.
-
-It showcases rustic culinary artistry through its signature use of toasted rice powder and fresh herbs.
+{
+  "title": "Nem Thính",
+  "description": "Traditional Vietnamese toasted rice powder salad featuring sliced pork, pork skin, herbs, and a tangy dipping sauce.",
+  "videoUrl": "https://www.youtube.com/watch?v=CpsqnvGzC-w",
+  "price": 4.99,
+  "difficulty": "medium",
+  "cookingTime": 90,
+  "servings": 4,
+  "category": "Vietnamese",
+  "ingredients": [
+    { "label": "Boiled pork", "quantity": null, "measurement": "" },
+    { "label": "Pork skin", "quantity": null, "measurement": "" },
+    { "label": "Toasted rice powder (thính gạo rang)", "quantity": null, "measurement": "" },
+    { "label": "Fig leaves", "quantity": null, "measurement": "" },
+    { "label": "Lime leaves", "quantity": null, "measurement": "" },
+    { "label": "Thai basil", "quantity": null, "measurement": "" },
+    { "label": "Spearmint", "quantity": null, "measurement": "" },
+    { "label": "Fish sauce", "quantity": null, "measurement": "" },
+    { "label": "Garlic", "quantity": null, "measurement": "" },
+    { "label": "Chili", "quantity": null, "measurement": "" }
+  ],
+  "instructions": [
+    { "step": 1, "content": "Boil pork until tender, then slice thinly. Slice pork skin into thin strips." },
+    { "step": 2, "content": "Toss the pork and pork skin with toasted rice powder until coated evenly and aromatic." },
+    { "step": 3, "content": "Prepare a dipping sauce by mixing fish sauce with minced garlic and chili." },
+    { "step": 4, "content": "Serve the pork mixture with a platter of fresh herbs and the dipping sauce on the side." }
+  ],
+  "nutrition": []
+}

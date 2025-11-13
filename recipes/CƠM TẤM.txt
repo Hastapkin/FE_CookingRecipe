@@ -1,53 +1,39 @@
-CƠM TẤM
-
-Ingredients
-Broken rice (cooked as usual)
-
-Pork chops (sườn cốt lết)
-
-Pork skin and pork (for shredded pork skin, "bì")
-
-Vietnamese steamed egg meatloaf ("chả trứng")
-
-Pickled vegetables (carrot, daikon)
-
-Cucumber, tomato, fresh herbs
-
-Garlic, shallots, fish sauce, oyster sauce, sugar, pepper, honey, eggs, mung bean noodles, wood ear mushrooms
-
-Signature sweet fish sauce for serving
-
-Instructions
-Step 1: Cook the Broken Rice
-Rinse the broken rice several times and cook in a rice cooker.
-
-For best texture, ensure the water ratio is just enough (about as high as your first knuckle on the submerged rice).
-
-Step 2: Prepare and Grill Pork Chops
-Tenderize and flatten pork chops.
-
-Marinate pork with minced garlic, shallots, oyster sauce, honey, fish sauce, pepper, and sugar for at least 1 hour.
-
-Grill the pork over charcoal until cooked, flavorful, and slightly caramelized.
-
-Step 3: Make Shredded Pork Skin ("Bì")
-Boil pork skin briefly, slice thinly.
-
-Toss with julienned pork, toasted rice powder, garlic, and fish sauce to taste.
-
-Step 4: Prepare Steamed Egg Meatloaf ("Chả Trứng")
-Mix ground pork with mung bean noodles (soaked and chopped), wood ear mushrooms (soaked and diced), eggs, salt, pepper, and a small amount of shallot.
-
-Spread the mixture in a plate, steam for 25-30 minutes.
-
-Brush with a layer of egg yolk and steam 5 more minutes for a glossy finish.
-
-Step 5: Sweet Fish Sauce
-Make a sauce with fish sauce, sugar, water, vinegar (or lime juice), garlic, and chili.
-
-Adjust to a balance of sweet, salty, sour, and spicy for the signature flavor.
-
-Step 6: Assemble and Serve
-Serve the broken rice on a plate with grilled pork chop, a slice of egg meatloaf, a portion of shredded pork skin, pickled vegetables, fresh cucumber, and herbs.
-
-Drizzle with sweet fish sauce and enjoy.
+{
+  "title": "Cơm Tấm",
+  "description": "Classic Vietnamese broken rice served with grilled pork chop, shredded pork skin, steamed egg meatloaf, pickles, and sweet fish sauce.",
+  "videoUrl": "https://www.youtube.com/watch?v=P50LW8SzfXQ",
+  "price": 9.99,
+  "difficulty": "medium",
+  "cookingTime": 120,
+  "servings": 4,
+  "category": "Vietnamese",
+  "ingredients": [
+    { "label": "Broken rice", "quantity": null, "measurement": "" },
+    { "label": "Pork chops", "quantity": null, "measurement": "" },
+    { "label": "Pork skin", "quantity": null, "measurement": "" },
+    { "label": "Cooked pork (for shredded pork skin)", "quantity": null, "measurement": "" },
+    { "label": "Vietnamese steamed egg meatloaf (chả trứng)", "quantity": null, "measurement": "" },
+    { "label": "Pickled carrot and daikon", "quantity": null, "measurement": "" },
+    { "label": "Fresh cucumber and tomato", "quantity": null, "measurement": "" },
+    { "label": "Garlic and shallots", "quantity": null, "measurement": "" },
+    { "label": "Fish sauce", "quantity": null, "measurement": "" },
+    { "label": "Oyster sauce", "quantity": null, "measurement": "" },
+    { "label": "Sugar", "quantity": null, "measurement": "" },
+    { "label": "Pepper", "quantity": null, "measurement": "" },
+    { "label": "Honey", "quantity": null, "measurement": "" },
+    { "label": "Eggs", "quantity": null, "measurement": "" },
+    { "label": "Mung bean noodles", "quantity": null, "measurement": "" },
+    { "label": "Wood ear mushrooms", "quantity": null, "measurement": "" },
+    { "label": "Vinegar or lime juice", "quantity": null, "measurement": "" },
+    { "label": "Fresh herbs", "quantity": null, "measurement": "" }
+  ],
+  "instructions": [
+    { "step": 1, "content": "Rinse broken rice thoroughly and cook in a rice cooker with just enough water for a fluffy texture." },
+    { "step": 2, "content": "Tenderize pork chops, marinate with garlic, shallots, oyster sauce, honey, fish sauce, pepper, and sugar for at least one hour, then grill over charcoal until caramelized." },
+    { "step": 3, "content": "Boil pork skin briefly, slice thinly, and toss with julienned pork, toasted rice powder, garlic, and fish sauce to make shredded pork skin (bì)." },
+    { "step": 4, "content": "Combine ground pork with soaked mung bean noodles, diced wood ear mushrooms, eggs, and seasonings. Steam the mixture for 25–30 minutes, then brush with egg yolk and steam briefly to finish." },
+    { "step": 5, "content": "Prepare sweet fish sauce by mixing fish sauce, sugar, water, vinegar or lime juice, garlic, and chili to balance sweet, salty, sour, and spicy flavors." },
+    { "step": 6, "content": "Plate the broken rice with grilled pork chop, egg meatloaf, shredded pork skin, pickled vegetables, cucumber, and herbs. Drizzle with sweet fish sauce before serving." }
+  ],
+  "nutrition": []
+}

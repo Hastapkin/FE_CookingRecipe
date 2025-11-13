@@ -1,51 +1,31 @@
-GIÒ HEO
-
-Ingredients
-Pork knuckle (pork hock or front leg), cleaned well
-
-Salt, pepper, ginger (for cleaning/blanching)
-
-Fish sauce (high quality)
-
-Garlic, shallots, red chili, onion
-
-Sugar
-
-Cooking oil
-
-Instructions
-Step 1: Prepare the Pork Knuckle
-Clean the pork knuckle with salt and ginger to remove odor; rinse well.
-
-Optionally, blanch the knuckle in boiling water for a few minutes, then rinse with cold water.
-
-Step 2: Boil and Dry
-Boil the pork knuckle until just cooked through but not too soft (about 45–60 minutes).
-
-Remove and submerge in ice water to tighten and crisp the skin.
-
-Let it drain and dry thoroughly (even overnight in the fridge for extra crispiness).
-
-Step 3: Deep-Fry
-Heat a generous amount of oil in a large pot or wok.
-
-Carefully fry the knuckle until the skin is golden brown and shatteringly crisp, turning as needed.
-
-Remove and let excess oil drain.
-
-Step 4: Fish Sauce Glaze
-In a pan, brown chopped garlic, shallots, and chili in a bit of oil until fragrant.
-
-Add fish sauce and sugar. Stir until slightly thickened into a glaze.
-
-Toss the fried pork knuckle pieces in the sauce to fully coat.
-
-Step 5: Serve
-Chop the crispy knuckle into bite-sized pieces.
-
-Serve immediately for maximum juiciness and crunch, with rice or as a party snack.
-
-Notes
-The key is thoroughly drying the pork skin before frying to achieve maximum crispiness and prevent oil splattering.​
-
-The sweet-salty fish sauce glaze is what sets this dish apart and pairs perfectly with the rich meat.
+{
+  "title": "Giò Heo Chiên Mắm Giòn Tan",
+  "description": "Crispy deep-fried pork knuckle tossed in a sweet and savory fish sauce glaze for a crowd-pleasing Vietnamese snack.",
+  "videoUrl": "https://www.youtube.com/watch?v=eV9U9CVCGlI",
+  "price": 12.99,
+  "difficulty": "hard",
+  "cookingTime": 180,
+  "servings": 4,
+  "category": "Vietnamese",
+  "ingredients": [
+    { "label": "Pork knuckle", "quantity": null, "measurement": "" },
+    { "label": "Salt", "quantity": null, "measurement": "" },
+    { "label": "Pepper", "quantity": null, "measurement": "" },
+    { "label": "Ginger", "quantity": null, "measurement": "" },
+    { "label": "Fish sauce", "quantity": null, "measurement": "" },
+    { "label": "Garlic", "quantity": null, "measurement": "" },
+    { "label": "Shallots", "quantity": null, "measurement": "" },
+    { "label": "Red chili", "quantity": null, "measurement": "" },
+    { "label": "Onion", "quantity": null, "measurement": "" },
+    { "label": "Sugar", "quantity": null, "measurement": "" },
+    { "label": "Cooking oil", "quantity": null, "measurement": "" }
+  ],
+  "instructions": [
+    { "step": 1, "content": "Scrub the pork knuckle with salt and ginger, rinse thoroughly, and optionally blanch to remove impurities." },
+    { "step": 2, "content": "Boil the knuckle until just cooked, cool in ice water, then drain and dry completely." },
+    { "step": 3, "content": "Deep-fry the pork knuckle in hot oil until the skin is evenly golden and crisp." },
+    { "step": 4, "content": "Sauté garlic, shallots, chili, and onion in a pan, add fish sauce and sugar to form a glaze, then toss the fried knuckle to coat." },
+    { "step": 5, "content": "Chop the knuckle into pieces and serve immediately while crispy." }
+  ],
+  "nutrition": []
+}

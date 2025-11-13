@@ -1,4 +1,4 @@
-import { apiGet } from './api'
+import { apiGet, apiPost, apiPut, apiDelete, apiPostFormData } from './api'
 import type { Recipe } from '../types/recipe'
 
 // Helper function to extract YouTube video ID from URL
@@ -65,7 +65,12 @@ type RecipeQueryParams = {
   limit?: number;
 }
 
-export async function fetchRecipes(params?: RecipeQueryParams): Promise<{
+export async function fetchRecipes(
+  params?: RecipeQueryParams,
+  options?: {
+    requireAuth?: boolean
+  }
+): Promise<{
   recipes: Recipe[];
   pagination: {
     page: number;
@@ -74,6 +79,7 @@ export async function fetchRecipes(params?: RecipeQueryParams): Promise<{
     totalPages: number;
   };
 }> {
+  const requireAuth = options?.requireAuth ?? false
   // Build query string
   const queryParams = new URLSearchParams()
   if (params?.search) queryParams.append('search', params.search)
@@ -86,7 +92,7 @@ export async function fetchRecipes(params?: RecipeQueryParams): Promise<{
   const queryString = queryParams.toString()
   const path = `/recipes${queryString ? `?${queryString}` : ''}`
   
-  const res = await apiGet<RecipesOverviewResponse>(path, false)
+  const res = await apiGet<RecipesOverviewResponse>(path, requireAuth)
   
   // Transform recipes to add isForSale and youtubeVideoId
   const transformedRecipes = res.data.recipes.map(transformRecipe)
@@ -102,6 +108,52 @@ export async function fetchRecipeById(id: number, requireAuth = false): Promise<
   if (!res.data) return null
   
   // Transform recipe to add isForSale and youtubeVideoId
+  return transformRecipe(res.data)
+}
+
+type RecipeMutationResponse = {
+  success: boolean
+  data: Recipe
+  message?: string
+}
+
+type BasicResponse = {
+  success: boolean
+  message?: string
+}
+
+export async function createRecipe(payload: unknown): Promise<Recipe> {
+  const res = await apiPost<RecipeMutationResponse>('/recipes', payload, true)
+  if (!res.success || !res.data) {
+    throw new Error(res.message || 'Failed to create recipe')
+  }
+  return transformRecipe(res.data)
+}
+
+export async function updateRecipe(id: number, payload: unknown): Promise<Recipe> {
+  const res = await apiPut<RecipeMutationResponse>(`/recipes/${id}`, payload, true)
+  if (!res.success || !res.data) {
+    throw new Error(res.message || 'Failed to update recipe')
+  }
+  return transformRecipe(res.data)
+}
+
+export async function deleteRecipe(id: number): Promise<void> {
+  const res = await apiDelete<BasicResponse>(`/recipes/${id}`, true)
+  if (!res.success) {
+    throw new Error(res.message || 'Failed to delete recipe')
+  }
+}
+
+export async function uploadRecipeThumbnail(id: number, file: File): Promise<Recipe> {
+  const formData = new FormData()
+  formData.append('image', file)
+  formData.append('recipeId', id.toString())
+
+  const res = await apiPostFormData<RecipeMutationResponse>('/images/recipe-thumbnail', formData, true)
+  if (!res.success || !res.data) {
+    throw new Error(res.message || 'Failed to update recipe thumbnail')
+  }
   return transformRecipe(res.data)
 }
 

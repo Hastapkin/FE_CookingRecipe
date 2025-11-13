@@ -1,52 +1,31 @@
-SỐT CHẤM
-
-1. Vietnamese Green Chili Seafood Sauce (Muối Ớt Xanh)
-Ingredients:
-
-3 green chili peppers, deseeded
-
-1 green bell pepper, deseeded
-
-3 limes, juiced
-
-6 tbsp sugar
-
-1 tbsp salt
-
-3 lime leaves (optional)
-
-1.5 tbsp sweetened condensed milk
-
-Instructions:
-
-Blend the green chilies, bell pepper, lime juice, sugar, salt, lime leaves, and condensed milk together until smooth.
-
-Chill for 1 hour before serving.
-
-Use with shrimp, squid, fish, or grilled meat for a tangy, creamy, spicy kick.​
-
-2. Vietnamese Lime Pepper Salt Sauce (Muối Tiêu Chanh)
-Ingredients:
-
-1 tsp salt
-
-1/2 tsp black pepper
-
-1 tbsp lime juice
-
-Sliced bird’s eye chili (optional)
-
-Instructions:
-
-Mix salt and pepper in a small dish.
-
-Add lime juice and sliced chili as desired.
-
-Serve with grilled or steamed seafood, meats, or even boiled chicken for a zesty, salty flavor.​
-
-Tips
-Both sauces can be stored in the fridge. The green chili sauce with milk should be kept cold and used within a week.
-
-The lime pepper sauce is very versatile and quick to make—great for any barbecue or hotpot meal.
-
-These two sauces cover most Vietnamese seafood and meat dishes, enhancing their flavor with a sweet, sour, spicy, and slightly creamy finish.
+{
+  "title": "Sốt Chấm Hải Sản và Thịt Nướng",
+  "description": "Two classic Vietnamese dipping sauces: green chili seafood sauce and lime pepper salt, perfect for seafood and grilled meats.",
+  "videoUrl": "https://www.youtube.com/watch?v=LU6nK8Kn-tE",
+  "price": 2.99,
+  "difficulty": "easy",
+  "cookingTime": 20,
+  "servings": 6,
+  "category": "Vietnamese",
+  "ingredients": [
+    { "label": "Green chili peppers, deseeded", "quantity": 3, "measurement": "pieces" },
+    { "label": "Green bell pepper, deseeded", "quantity": 1, "measurement": "piece" },
+    { "label": "Lime juice", "quantity": 3, "measurement": "limes" },
+    { "label": "Sugar", "quantity": 6, "measurement": "tablespoons" },
+    { "label": "Salt", "quantity": 1, "measurement": "tablespoon" },
+    { "label": "Lime leaves (optional)", "quantity": 3, "measurement": "leaves" },
+    { "label": "Sweetened condensed milk", "quantity": 1.5, "measurement": "tablespoons" },
+    { "label": "Additional salt", "quantity": 1, "measurement": "teaspoon" },
+    { "label": "Black pepper", "quantity": 0.5, "measurement": "teaspoon" },
+    { "label": "Fresh lime juice for dipping sauce", "quantity": 1, "measurement": "tablespoon" },
+    { "label": "Bird’s eye chili (optional)", "quantity": null, "measurement": "" }
+  ],
+  "instructions": [
+    { "step": 1, "content": "For the green chili seafood sauce, blend green chilies, bell pepper, lime juice, sugar, salt, optional lime leaves, and condensed milk until smooth." },
+    { "step": 2, "content": "Chill the blended sauce for at least one hour before serving with shrimp, squid, fish, or grilled meats." },
+    { "step": 3, "content": "For the lime pepper salt sauce, mix salt and black pepper in a small dish." },
+    { "step": 4, "content": "Add lime juice and sliced bird’s eye chili to taste, stirring until the seasonings dissolve." },
+    { "step": 5, "content": "Serve both sauces alongside seafood, grilled meats, or boiled chicken. Refrigerate leftovers and use within one week." }
+  ],
+  "nutrition": []
+}

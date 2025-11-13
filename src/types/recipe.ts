@@ -3,6 +3,7 @@ export interface Recipe {
   title: string;
   description?: string;
   youtubeVideoId: string;
+  videoUrl?: string | null;
   videoThumbnail?: string | null;
   price: number;
   isForSale: boolean;
@@ -16,6 +17,7 @@ export interface Recipe {
   purchaseCount: number;
   createdBy?: string;
   createdAt?: string;
+  updatedAt?: string;
   ingredients?: Array<{
     label: string;
     quantity: number;

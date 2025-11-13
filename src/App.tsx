@@ -15,6 +15,9 @@ import Contact from './pages/Contact'
 import NotFound from './pages/NotFound'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import AdminRecipes from './pages/admin/AdminRecipes'
+import AdminRecipeDetail from './pages/admin/AdminRecipeDetail'
+import AdminRecipeEditor from './pages/admin/AdminRecipeEditor'
 
 function App() {
   return (
@@ -31,6 +34,10 @@ function App() {
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/my-recipes" element={<MyRecipes />} />
           <Route path="/profile-picture" element={<ProfilePicture />} />
+          <Route path="/admin/recipes" element={<AdminRecipes />} />
+          <Route path="/admin/recipes/new" element={<AdminRecipeEditor />} />
+          <Route path="/admin/recipes/:id/edit" element={<AdminRecipeEditor />} />
+          <Route path="/admin/recipes/:id" element={<AdminRecipeDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />

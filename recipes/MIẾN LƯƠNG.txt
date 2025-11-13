@@ -1,37 +1,34 @@
-MIẾN LƯƠNG
-
-Ingredients
-Eel (cleaned)
-
-Vermicelli noodles (miến)
-
-Kaffir lime leaves and ginger leaves (for steaming option)
-
-Turmeric, shallots, betel leaves (for marinated and grilled option)
-
-Garlic, chili, fish sauce, sugar, salt, pepper
-
-Herbs and fresh greens for garnish
-
-Cooking Options for Eel
-Traditional method: Fry eel until crispy.
-
-Alternative 1: Steam eel with kaffir lime leaves and ginger leaves to add fragrance and reduce fishy smell.
-
-Alternative 2: Marinate eel with turmeric and shallots, then grill wrapped in betel leaves for an aromatic twist.
-
-Instructions
-Prepare eel by cleaning thoroughly.
-
-Choose one cooking method: fry, steam, or marinate and grill.
-
-Prepare vermicelli noodles as usual.
-
-Cook broth or sauce to serve with vermicelli and eel.
-
-Assemble the dish by combining vermicelli noodles, cooked eel, herbs, and broth or sauce.
-
-Notes
-These variations enhance the fragrance and flavor of the eel and keep it fresh.
-
-The dish is nutritious and great for warming up during colder days.
+{
+  "title": "Miến Lươn",
+  "description": "Vietnamese glass noodle soup with tender eel prepared fried, steamed, or grilled for fragrant, comforting bowls.",
+  "videoUrl": "https://www.youtube.com/watch?v=86oXUJNszjQ",
+  "price": 7.99,
+  "difficulty": "medium",
+  "cookingTime": 90,
+  "servings": 4,
+  "category": "Vietnamese",
+  "ingredients": [
+    { "label": "Eel", "quantity": null, "measurement": "" },
+    { "label": "Vermicelli noodles (miến)", "quantity": null, "measurement": "" },
+    { "label": "Kaffir lime leaves", "quantity": null, "measurement": "" },
+    { "label": "Ginger leaves", "quantity": null, "measurement": "" },
+    { "label": "Turmeric", "quantity": null, "measurement": "" },
+    { "label": "Shallots", "quantity": null, "measurement": "" },
+    { "label": "Betel leaves", "quantity": null, "measurement": "" },
+    { "label": "Garlic", "quantity": null, "measurement": "" },
+    { "label": "Chili", "quantity": null, "measurement": "" },
+    { "label": "Fish sauce", "quantity": null, "measurement": "" },
+    { "label": "Sugar", "quantity": null, "measurement": "" },
+    { "label": "Salt", "quantity": null, "measurement": "" },
+    { "label": "Pepper", "quantity": null, "measurement": "" },
+    { "label": "Fresh herbs and greens", "quantity": null, "measurement": "" }
+  ],
+  "instructions": [
+    { "step": 1, "content": "Clean the eel thoroughly, removing slime and bones as needed." },
+    { "step": 2, "content": "Choose a cooking method: fry the eel until crispy; steam with kaffir lime and ginger leaves; or marinate with turmeric and shallots, wrap in betel leaves, and grill." },
+    { "step": 3, "content": "Cook vermicelli noodles according to package instructions and set aside." },
+    { "step": 4, "content": "Prepare a savory broth or sauce with garlic, chili, fish sauce, sugar, salt, and pepper." },
+    { "step": 5, "content": "Assemble bowls with noodles, cooked eel, hot broth or sauce, and fresh herbs." }
+  ],
+  "nutrition": []
+}

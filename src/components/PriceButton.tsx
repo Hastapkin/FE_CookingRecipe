@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getUserSession } from '../services/auth'
 
 interface PriceButtonProps {
   price: number;
@@ -26,6 +27,12 @@ const PriceButton: React.FC<PriceButtonProps> = ({
   discount
 }) => {
   const [isLoading, setIsLoading] = useState(false)
+  const session = getUserSession()
+  const isAdmin = (session?.user.role || '').toLowerCase() === 'admin'
+
+  if (isAdmin) {
+    return null
+  }
 
   const handleClick = async () => {
     if (isPurchased) {

@@ -72,13 +72,14 @@ export function getUserSession(): { user: User; token: string } | null {
   
   try {
     const data = JSON.parse(userStr)
+    const rawUser = data.user ? data.user : data
     return {
       user: {
-        id: data.id,
-        username: data.username,
-        profilePicture: data.profilePicture,
-        role: data.role,
-        createdAt: data.createdAt
+        id: rawUser.id,
+        username: rawUser.username,
+        profilePicture: rawUser.profilePicture,
+        role: rawUser.role,
+        createdAt: rawUser.createdAt
       },
       token: data.token
     }
