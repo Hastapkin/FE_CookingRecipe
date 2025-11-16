@@ -15,11 +15,11 @@ function Recipes() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 9,
+    limit: 3,
     total: 0,
     totalPages: 1
   });
-  const pageSize = 9;
+  const pageSize = 3;
   const [filters, setFilters] = useState({
     category: '',
     difficulty: '',
