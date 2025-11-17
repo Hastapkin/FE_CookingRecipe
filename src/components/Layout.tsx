@@ -132,6 +132,20 @@ function Layout() {
                       <span>Add Recipe</span>
                     </NavLink>
                   </li>
+                  <li className="nav-item">
+                    <NavLink
+                      to="/admin/transactions"
+                      className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
+                      onClick={() => {
+                        setMobileMenuOpen(false)
+                        setDropdownOpen(false)
+                        setInfoDropdownOpen(false)
+                      }}
+                    >
+                      <i className="fas fa-receipt"></i>
+                      <span>Transactions</span>
+                    </NavLink>
+                  </li>
                 </>
               ) : (
                 <>

@@ -18,6 +18,7 @@ import Register from './pages/Register'
 import AdminRecipes from './pages/admin/AdminRecipes'
 import AdminRecipeDetail from './pages/admin/AdminRecipeDetail'
 import AdminRecipeEditor from './pages/admin/AdminRecipeEditor'
+import AdminTransactions from './pages/admin/AdminTransactions'
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/admin/recipes/new" element={<AdminRecipeEditor />} />
           <Route path="/admin/recipes/:id/edit" element={<AdminRecipeEditor />} />
           <Route path="/admin/recipes/:id" element={<AdminRecipeDetail />} />
+          <Route path="/admin/transactions" element={<AdminTransactions />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />

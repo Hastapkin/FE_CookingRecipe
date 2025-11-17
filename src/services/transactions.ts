@@ -75,3 +75,31 @@ export async function submitPayment(
   return response
 }
 
+export interface GetAllTransactionsResponse {
+  success: boolean
+  data: {
+    transactions: Transaction[]
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+  }
+}
+
+export async function getAllTransactions(
+  status?: 'pending' | 'verified' | 'rejected',
+  page: number = 1,
+  limit: number = 20
+): Promise<GetAllTransactionsResponse['data']> {
+  const params = new URLSearchParams()
+  if (status) params.append('status', status)
+  params.append('page', page.toString())
+  params.append('limit', limit.toString())
+  
+  const path = `/transactions/all?${params.toString()}`
+  const response = await apiGet<GetAllTransactionsResponse>(path, true)
+  return response.data
+}
+

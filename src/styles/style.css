@@ -4399,6 +4399,46 @@ section {
   justify-content: flex-end;
 }
 
+.admin-transactions-table {
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.admin-transactions-table .table-header,
+.admin-transactions-table .table-row {
+  display: grid;
+  grid-template-columns: 80px 100px 120px 150px 120px 180px 80px auto;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  align-items: center;
+}
+
+.admin-transactions-table .table-header {
+  background: var(--neutral-100);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: var(--text-sm);
+  letter-spacing: 0.05em;
+}
+
+.admin-transactions-table .table-row:nth-of-type(odd) {
+  background: white;
+}
+
+.admin-transactions-table .table-row:nth-of-type(even) {
+  background: var(--neutral-50);
+}
+
+.admin-transactions-table .table-row span:last-child {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-transactions-filters {
+  margin-bottom: var(--spacing-xl);
+}
+
 .admin-recipe-detail-grid {
   display: grid;
   gap: var(--spacing-3xl);
