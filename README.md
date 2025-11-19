@@ -435,7 +435,3 @@ Thiết lập `VITE_API_BASE` trên hosting platform để trỏ đến backend 
 
 Dự án này được phát triển cho mục đích học tập.
 
-## Tác giả
-
-Phát triển bởi nhóm MSIS207.Q12.CTTT
-
