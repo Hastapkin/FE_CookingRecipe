@@ -34,9 +34,18 @@ function Cart() {
   }
 
   const handleRemove = async (recipeId: number) => {
+    const item = cartItems.find(i => i.recipeId === recipeId)
+    if (!item) return
+
+    if (!confirm(`Are you sure you want to remove "${item.title}" from your cart?`)) {
+      return
+    }
+
     try {
       await removeFromCart(recipeId)
       setCartItems(prev => prev.filter(item => item.recipeId !== recipeId))
+      // Dispatch event to update cart count in navigation
+      window.dispatchEvent(new Event('cartChanged'))
     } catch (err) {
       console.error('Failed to remove item:', err)
       alert('Failed to remove item from cart')

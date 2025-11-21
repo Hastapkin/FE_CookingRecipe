@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getTransactions, getTransaction } from '../services/transactions'
+import { getTransactions } from '../services/transactions'
 import { getUserSession } from '../services/auth'
 
 interface OrderItem {
@@ -15,6 +15,7 @@ interface Order {
   totalAmount: number
   status: 'pending' | 'verified' | 'rejected'
   paymentMethod?: string | null
+  paymentProof?: string | null
   createdAt: string
   adminNotes?: string | null
   items: OrderItem[]
@@ -45,21 +46,22 @@ function MyOrders() {
       // Always get all transactions to show correct counts
       const transactions = await getTransactions()
 
-      // Fetch details for each transaction to get recipe information
-      const ordersWithDetails = await Promise.all(
-        transactions.map(async (transaction) => {
-          const detail = await getTransaction(transaction.id)
-          return {
-            id: detail.id,
-            totalAmount: detail.totalAmount,
-            status: detail.status,
-            paymentMethod: detail.paymentMethod,
-            createdAt: detail.createdAt,
-            adminNotes: detail.adminNotes,
-            items: detail.recipes || []
-          } as Order
-        })
-      )
+      // getUserTransactions now includes recipes, so we can use them directly
+      const ordersWithDetails = transactions.map((transaction) => ({
+        id: transaction.id,
+        totalAmount: transaction.totalAmount,
+        status: transaction.status,
+        paymentMethod: transaction.paymentMethod,
+        paymentProof: transaction.paymentProof,
+        createdAt: transaction.createdAt,
+        adminNotes: transaction.adminNotes,
+        items: (transaction.recipes || []).map((r: any) => ({
+          recipeId: r.recipeId,
+          title: r.title,
+          price: r.price,
+          videoThumbnail: r.videoThumbnail
+        }))
+      } as Order))
 
       setAllOrders(ordersWithDetails)
     } catch (err) {
@@ -288,10 +290,19 @@ function MyOrders() {
                   )}
                   {order.status === 'pending' && (
                     <div className="action-group">
-                      <p className="pending-message">
-                        <i className="fas fa-info-circle"></i>
-                        Waiting for admin verification
-                      </p>
+                      {!order.paymentProof ? (
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => navigate(`/checkout?transactionId=${order.id}`)}
+                        >
+                          <i className="fas fa-credit-card"></i> Complete Payment
+                        </button>
+                      ) : (
+                        <p className="pending-message">
+                          <i className="fas fa-info-circle"></i>
+                          Waiting for admin verification
+                        </p>
+                      )}
                     </div>
                   )}
                   {order.status === 'rejected' && (

@@ -1,30 +1,108 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getCart, type CartItem } from '../services/cart'
 import { getUserSession } from '../services/auth'
-import { createTransaction, submitPayment } from '../services/transactions'
+import { createTransaction, submitPayment, getTransactions } from '../services/transactions'
 
 interface CheckoutForm {
-  paymentMethod: 'online_banking' | 'paypal'
+  paymentMethod: 'vietqr' | 'paypal'
   paymentProof: File | null
+}
+
+// VietQR Configuration
+const VIETQR_CONFIG = {
+  bankCode: 'sacombank',
+  accountNumber: '050121382447',
+  accountName: 'Ngo Thanh Trung',
+  // Static conversion rate: 1 USD = 25000 VND (can be made dynamic later)
+  usdToVndRate: 25000
 }
 
 function Checkout() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [formData, setFormData] = useState<CheckoutForm>({
-    paymentMethod: 'online_banking',
+    paymentMethod: 'vietqr',
     paymentProof: null
   })
   const [loading, setLoading] = useState(false)
   const [creatingTransaction, setCreatingTransaction] = useState(false)
+  const [loadingExistingTransaction, setLoadingExistingTransaction] = useState(false)
   const [errors, setErrors] = useState<{ paymentMethod?: string; paymentProof?: string }>({})
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [transactionId, setTransactionId] = useState<number | null>(null)
+  const [vietqrUrl, setVietqrUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    loadCart()
-  }, [])
+    const existingTransactionId = searchParams.get('transactionId')
+    if (existingTransactionId) {
+      // Load existing transaction
+      loadExistingTransaction(parseInt(existingTransactionId))
+    } else {
+      // Normal checkout flow
+      loadCart()
+    }
+  }, [searchParams])
+
+  const loadExistingTransaction = async (id: number) => {
+    try {
+      setLoadingExistingTransaction(true)
+      // Get transaction from the list (getUserTransactions includes recipes)
+      const transactions = await getTransactions()
+      const transaction = transactions.find(t => t.id === id)
+      
+      if (!transaction) {
+        throw new Error('Transaction not found')
+      }
+      
+      setTransactionId(transaction.id)
+      
+      // Load cart items from transaction recipes
+      if (transaction.recipes && transaction.recipes.length > 0) {
+        const items: CartItem[] = transaction.recipes.map(recipe => ({
+          id: recipe.recipeId,
+          recipeId: recipe.recipeId,
+          title: recipe.title,
+          price: recipe.price,
+          videoThumbnail: recipe.videoThumbnail || undefined
+        }))
+        setCartItems(items)
+      }
+
+      // If transaction has payment method, set it
+      if (transaction.paymentMethod) {
+        const method = transaction.paymentMethod.toLowerCase().includes('vietqr') ? 'vietqr' : 'paypal'
+        setFormData(prev => ({ ...prev, paymentMethod: method }))
+        
+        // Generate QR code if VietQR
+        if (method === 'vietqr') {
+          const total = transaction.totalAmount
+          const amountVnd = Math.round(total * VIETQR_CONFIG.usdToVndRate)
+          const addInfo = encodeURIComponent(`payment for order ${transaction.id}`)
+          const accountName = encodeURIComponent(VIETQR_CONFIG.accountName)
+          const qrUrl = `https://img.vietqr.io/image/${VIETQR_CONFIG.bankCode}-${VIETQR_CONFIG.accountNumber}-compact2.jpg?amount=${amountVnd}&addInfo=${addInfo}&accountName=${accountName}`
+          setVietqrUrl(qrUrl)
+        }
+      } else {
+        // No payment method yet, generate QR if VietQR is default
+        if (formData.paymentMethod === 'vietqr') {
+          const total = transaction.totalAmount
+          const amountVnd = Math.round(total * VIETQR_CONFIG.usdToVndRate)
+          const addInfo = encodeURIComponent(`payment for order ${transaction.id}`)
+          const accountName = encodeURIComponent(VIETQR_CONFIG.accountName)
+          const qrUrl = `https://img.vietqr.io/image/${VIETQR_CONFIG.bankCode}-${VIETQR_CONFIG.accountNumber}-compact2.jpg?amount=${amountVnd}&addInfo=${addInfo}&accountName=${accountName}`
+          setVietqrUrl(qrUrl)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load existing transaction:', error)
+      alert('Failed to load transaction. Redirecting to cart.')
+      navigate('/cart')
+    } finally {
+      setLoadingExistingTransaction(false)
+    }
+  }
 
   const loadCart = async () => {
     try {
@@ -47,10 +125,69 @@ function Checkout() {
     }
   }
 
-  const handlePaymentMethodChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, paymentMethod: e.target.value as 'online_banking' | 'paypal' }))
+  // Auto-generate QR code when cart loads and VietQR is selected
+  useEffect(() => {
+    if (cartItems.length > 0 && formData.paymentMethod === 'vietqr' && !vietqrUrl && !transactionId) {
+      const generateVietQR = async () => {
+        try {
+          setCreatingTransaction(true)
+          // Create transaction
+          const transactionResponse = await createTransaction()
+          const currentTransactionId = transactionResponse.data.id
+          setTransactionId(currentTransactionId)
+
+          // Generate VietQR URL
+          const total = cartItems.reduce((sum, item) => sum + item.price, 0)
+          const amountVnd = Math.round(total * VIETQR_CONFIG.usdToVndRate)
+          const addInfo = encodeURIComponent(`payment for order ${currentTransactionId}`)
+          const accountName = encodeURIComponent(VIETQR_CONFIG.accountName)
+          const qrUrl = `https://img.vietqr.io/image/${VIETQR_CONFIG.bankCode}-${VIETQR_CONFIG.accountNumber}-compact2.jpg?amount=${amountVnd}&addInfo=${addInfo}&accountName=${accountName}`
+          setVietqrUrl(qrUrl)
+        } catch (error) {
+          console.error('Failed to create transaction for VietQR:', error)
+        } finally {
+          setCreatingTransaction(false)
+        }
+      }
+      generateVietQR()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartItems.length, formData.paymentMethod])
+
+  const handlePaymentMethodChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newMethod = e.target.value as 'vietqr' | 'paypal'
+    setFormData(prev => ({ ...prev, paymentMethod: newMethod }))
     if (errors.paymentMethod) {
       setErrors(prev => ({ ...prev, paymentMethod: undefined }))
+    }
+
+    // If VietQR is selected, create transaction and generate QR code
+    if (newMethod === 'vietqr') {
+      try {
+        setCreatingTransaction(true)
+        // Create transaction if not already created
+        let currentTransactionId = transactionId
+        if (!currentTransactionId) {
+          const transactionResponse = await createTransaction()
+          currentTransactionId = transactionResponse.data.id
+          setTransactionId(currentTransactionId)
+        }
+
+        // Generate VietQR URL
+        const amountVnd = Math.round(total * VIETQR_CONFIG.usdToVndRate)
+        const addInfo = encodeURIComponent(`payment for order ${currentTransactionId}`)
+        const accountName = encodeURIComponent(VIETQR_CONFIG.accountName)
+        const qrUrl = `https://img.vietqr.io/image/${VIETQR_CONFIG.bankCode}-${VIETQR_CONFIG.accountNumber}-compact2.jpg?amount=${amountVnd}&addInfo=${addInfo}&accountName=${accountName}`
+        setVietqrUrl(qrUrl)
+      } catch (error) {
+        console.error('Failed to create transaction for VietQR:', error)
+        alert('Failed to generate QR code. Please try again.')
+      } finally {
+        setCreatingTransaction(false)
+      }
+    } else {
+      // Clear QR code for other payment methods
+      setVietqrUrl(null)
     }
   }
 
@@ -117,7 +254,7 @@ function Checkout() {
         throw new Error('Payment proof is required')
       }
 
-      const paymentMethodLabel = formData.paymentMethod === 'online_banking' ? 'Online Banking' : 'PayPal'
+      const paymentMethodLabel = formData.paymentMethod === 'paypal' ? 'PayPal' : 'VietQR'
       await submitPayment(currentTransactionId, paymentMethodLabel, formData.paymentProof)
 
       // Redirect to My Orders page
@@ -132,6 +269,20 @@ function Checkout() {
   }
 
   const total = cartItems.reduce((sum, item) => sum + item.price, 0)
+
+  // Show loading state when loading existing transaction
+  if (loadingExistingTransaction) {
+    return (
+      <main>
+        <div className="checkout-container">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading transaction...</p>
+          </div>
+        </div>
+      </main>
+    )
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -184,13 +335,13 @@ function Checkout() {
                     <input
                       type="radio"
                       name="paymentMethod"
-                      value="online_banking"
-                      checked={formData.paymentMethod === 'online_banking'}
+                      value="vietqr"
+                      checked={formData.paymentMethod === 'vietqr'}
                       onChange={handlePaymentMethodChange}
                     />
                     <div className="payment-card">
-                      <i className="fas fa-university"></i>
-                      <span>Online Banking</span>
+                      <i className="fas fa-qrcode"></i>
+                      <span>VietQR</span>
                     </div>
                   </label>
                   <label className="payment-option">
@@ -210,10 +361,28 @@ function Checkout() {
                 {errors.paymentMethod && <span className="error-message">{errors.paymentMethod}</span>}
               </div>
 
+              {/* VietQR QR Code Display */}
+              {formData.paymentMethod === 'vietqr' && vietqrUrl && (
+                <div className="form-section">
+                  <h3>Scan QR Code to Pay</h3>
+                  <p className="form-help-text">
+                    Scan this QR code with your banking app to complete the payment.
+                    Amount: {Math.round(total * VIETQR_CONFIG.usdToVndRate).toLocaleString('vi-VN')} VND
+                    {transactionId && ` (Order #${transactionId})`}
+                  </p>
+                  <div className="vietqr-container">
+                    <img src={vietqrUrl} alt="VietQR Payment Code" className="vietqr-image" />
+                  </div>
+                </div>
+              )}
+
               <div className="form-section">
                 <h3>Payment Proof</h3>
                 <p className="form-help-text">
-                  Please upload a screenshot or image of your payment confirmation.
+                  {formData.paymentMethod === 'vietqr' 
+                    ? 'After scanning the QR code and completing payment, please upload a screenshot of your payment confirmation.'
+                    : 'Please upload a screenshot or image of your payment confirmation.'
+                  }
                 </p>
                 <div className="form-group">
                   <label htmlFor="paymentProof" className="file-upload-label">

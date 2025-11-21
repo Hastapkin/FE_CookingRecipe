@@ -392,6 +392,8 @@ function RecipeDetail() {
 
     try {
       await addToCart(recipe.id);
+      // Dispatch event to update cart count in navigation
+      window.dispatchEvent(new Event('cartChanged'))
       alert('Recipe added to cart successfully!');
       navigate('/cart');
       // Stay on page to continue browsing

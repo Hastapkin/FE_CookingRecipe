@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
 import { getUserSession, clearUserSession, getProfile, type User } from '../services/auth'
+import { getCart } from '../services/cart'
 
 function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -8,6 +9,7 @@ function Layout() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [userDropdownOpen, setUserDropdownOpen] = useState(false)
   const [infoDropdownOpen, setInfoDropdownOpen] = useState(false)
+  const [cartCount, setCartCount] = useState<number>(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const userDropdownRef = useRef<HTMLDivElement>(null)
   const infoDropdownRef = useRef<HTMLDivElement>(null)
@@ -36,26 +38,60 @@ function Layout() {
     }
   }
 
+  const loadCartCount = async () => {
+    const session = getUserSession()
+    if (!session) {
+      setCartCount(0)
+      return
+    }
+
+    try {
+      const cartData = await getCart()
+      setCartCount(cartData.items.length)
+    } catch (error) {
+      // If cart fetch fails, set count to 0
+      setCartCount(0)
+    }
+  }
+
   useEffect(() => {
     updateUser()
     
     // Listen for storage events (from other tabs)
     const handler = () => {
       updateUser()
+      loadCartCount()
     }
     window.addEventListener('storage', handler)
     
     // Listen for custom auth events (from same tab)
     const authHandler = () => {
       updateUser()
+      loadCartCount()
     }
     window.addEventListener('authStateChanged', authHandler)
+    
+    // Listen for cart changes
+    const cartHandler = () => {
+      loadCartCount()
+    }
+    window.addEventListener('cartChanged', cartHandler)
     
     return () => {
       window.removeEventListener('storage', handler)
       window.removeEventListener('authStateChanged', authHandler)
+      window.removeEventListener('cartChanged', cartHandler)
     }
   }, [])
+
+  // Load cart count when user changes
+  useEffect(() => {
+    if (currentUser) {
+      loadCartCount()
+    } else {
+      setCartCount(0)
+    }
+  }, [currentUser?.id])
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -280,6 +316,9 @@ function Layout() {
                       >
                         <i className="fas fa-shopping-bag"></i>
                         <span className="hide-sm">Orders</span>
+                        {cartCount > 0 && (
+                          <span className="cart-badge">{cartCount}</span>
+                        )}
                         <i className={`fas fa-chevron-${dropdownOpen ? 'up' : 'down'} dropdown-arrow`}></i>
                       </button>
                       {dropdownOpen && (
@@ -294,6 +333,9 @@ function Layout() {
                           >
                             <i className="fas fa-shopping-cart"></i>
                             <span>Cart</span>
+                            {cartCount > 0 && (
+                              <span className="cart-badge">{cartCount}</span>
+                            )}
                           </NavLink>
                           <NavLink 
                             to="/my-orders" 
@@ -387,6 +429,9 @@ function Layout() {
                     >
                       <i className="fas fa-shopping-bag"></i>
                       <span className="hide-sm">Orders</span>
+                      {cartCount > 0 && (
+                        <span className="cart-badge">{cartCount}</span>
+                      )}
                       <i className={`fas fa-chevron-${dropdownOpen ? 'up' : 'down'} dropdown-arrow`}></i>
                     </button>
                     {dropdownOpen && (
@@ -401,6 +446,9 @@ function Layout() {
                         >
                           <i className="fas fa-shopping-cart"></i>
                           <span>Cart</span>
+                          {cartCount > 0 && (
+                            <span className="cart-badge">{cartCount}</span>
+                          )}
                         </NavLink>
                         <NavLink 
                           to="/my-orders" 

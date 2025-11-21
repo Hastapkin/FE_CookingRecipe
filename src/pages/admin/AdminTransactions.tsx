@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Transaction } from '../../services/transactions'
-import { getAllTransactions } from '../../services/transactions'
+import { getAllTransactions, verifyTransaction, rejectTransaction } from '../../services/transactions'
 import { getUserSession } from '../../services/auth'
 
 function AdminTransactions() {
@@ -10,6 +10,9 @@ function AdminTransactions() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('pending')
+  const [processingId, setProcessingId] = useState<number | null>(null)
+  const [rejectNote, setRejectNote] = useState<string>('')
+  const [showRejectModal, setShowRejectModal] = useState<number | null>(null)
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -58,6 +61,47 @@ function AdminTransactions() {
   const handleViewProof = (proofUrl: string) => {
     if (proofUrl) {
       window.open(proofUrl, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  const handleVerify = async (transactionId: number) => {
+    if (!confirm('Are you sure you want to verify this transaction? This will grant the user access to purchased recipes.')) {
+      return
+    }
+
+    try {
+      setProcessingId(transactionId)
+      await verifyTransaction(transactionId)
+      // Reload transactions
+      await loadTransactions()
+      alert('Transaction verified successfully!')
+    } catch (error) {
+      console.error('Failed to verify transaction:', error)
+      alert(error instanceof Error ? error.message : 'Failed to verify transaction. Please try again.')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  const handleReject = async (transactionId: number) => {
+    if (!rejectNote.trim()) {
+      alert('Please provide a reason for rejection.')
+      return
+    }
+
+    try {
+      setProcessingId(transactionId)
+      await rejectTransaction(transactionId, rejectNote.trim())
+      // Reload transactions
+      await loadTransactions()
+      setShowRejectModal(null)
+      setRejectNote('')
+      alert('Transaction rejected successfully!')
+    } catch (error) {
+      console.error('Failed to reject transaction:', error)
+      alert(error instanceof Error ? error.message : 'Failed to reject transaction. Please try again.')
+    } finally {
+      setProcessingId(null)
     }
   }
 
@@ -194,19 +238,41 @@ function AdminTransactions() {
                     <span>{formatDate(transaction.createdAt)}</span>
                     <span>{transaction.recipeCount || transaction.recipes?.length || 0}</span>
                     <span>
-                      {transaction.paymentProof && 
-                       typeof transaction.paymentProof === 'string' && 
-                       transaction.paymentProof.trim() !== '' ? (
-                        <button
-                          className="btn btn-outline btn-small"
-                          onClick={() => handleViewProof(transaction.paymentProof!)}
-                          title="View payment proof"
-                        >
-                          <i className="fas fa-image"></i> View Proof
-                        </button>
-                      ) : (
-                        <span className="text-muted">No proof</span>
-                      )}
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {transaction.paymentProof && 
+                         typeof transaction.paymentProof === 'string' && 
+                         transaction.paymentProof.trim() !== '' ? (
+                          <button
+                            className="btn btn-outline btn-small"
+                            onClick={() => handleViewProof(transaction.paymentProof!)}
+                            title="View payment proof"
+                          >
+                            <i className="fas fa-image"></i> View Proof
+                          </button>
+                        ) : (
+                          <span className="text-muted">No proof</span>
+                        )}
+                        {transaction.status === 'pending' && (
+                          <>
+                            <button
+                              className="btn btn-primary btn-small"
+                              onClick={() => handleVerify(transaction.id)}
+                              disabled={processingId === transaction.id}
+                              title="Verify transaction"
+                            >
+                              <i className="fas fa-check"></i> Verify
+                            </button>
+                            <button
+                              className="btn btn-outline btn-small"
+                              onClick={() => setShowRejectModal(transaction.id)}
+                              disabled={processingId === transaction.id}
+                              title="Reject transaction"
+                            >
+                              <i className="fas fa-times"></i> Reject
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </span>
                   </div>
                 ))}
@@ -237,6 +303,58 @@ function AdminTransactions() {
           )}
         </div>
       </section>
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="modal-overlay" onClick={() => {
+          setShowRejectModal(null)
+          setRejectNote('')
+        }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Reject Transaction #{showRejectModal}</h3>
+              <button
+                className="modal-close"
+                onClick={() => {
+                  setShowRejectModal(null)
+                  setRejectNote('')
+                }}
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Please provide a reason for rejecting this transaction:</p>
+              <textarea
+                className="form-control"
+                rows={4}
+                value={rejectNote}
+                onChange={(e) => setRejectNote(e.target.value)}
+                placeholder="Enter rejection reason..."
+                style={{ width: '100%', marginTop: '12px' }}
+              />
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn btn-outline"
+                onClick={() => {
+                  setShowRejectModal(null)
+                  setRejectNote('')
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => handleReject(showRejectModal)}
+                disabled={!rejectNote.trim() || processingId === showRejectModal}
+              >
+                {processingId === showRejectModal ? 'Rejecting...' : 'Reject Transaction'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

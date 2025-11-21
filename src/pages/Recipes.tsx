@@ -291,6 +291,8 @@ function Recipes() {
                             }
                             try {
                               await addToCart(recipe.id);
+                              // Dispatch event to update cart count in navigation
+                              window.dispatchEvent(new Event('cartChanged'))
                               // Stay on page to continue browsing
                             } catch (error) {
                               const errorMessage = error instanceof Error ? error.message : String(error);

@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPutFormData } from './api'
+import { apiGet, apiPost, apiPutFormData, apiPut } from './api'
 
 export interface Transaction {
   id: number
@@ -101,5 +101,51 @@ export async function getAllTransactions(
   const path = `/transactions/all?${params.toString()}`
   const response = await apiGet<GetAllTransactionsResponse>(path, true)
   return response.data
+}
+
+export interface VerifyTransactionResponse {
+  success: boolean
+  message: string
+  data: {
+    transactionId: number
+    status: string
+    purchaseCount: number
+    purchaseIds: number[]
+  }
+}
+
+export interface RejectTransactionResponse {
+  success: boolean
+  message: string
+  data: {
+    transactionId: number
+    status: string
+    adminNotes: string
+  }
+}
+
+export async function verifyTransaction(
+  transactionId: number,
+  adminNotes?: string
+): Promise<VerifyTransactionResponse> {
+  const body = adminNotes ? { adminNotes } : {}
+  const response = await apiPut<VerifyTransactionResponse>(
+    `/transactions/${transactionId}/verify`,
+    body,
+    true
+  )
+  return response
+}
+
+export async function rejectTransaction(
+  transactionId: number,
+  adminNotes: string
+): Promise<RejectTransactionResponse> {
+  const response = await apiPut<RejectTransactionResponse>(
+    `/transactions/${transactionId}/reject`,
+    { adminNotes },
+    true
+  )
+  return response
 }
 
