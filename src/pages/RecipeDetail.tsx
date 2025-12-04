@@ -464,17 +464,6 @@ function RecipeDetail() {
                   autoplay={autoplay}
                 />
                 <div className="recipe-badge">{recipe.category}</div>
-                <div className="recipe-actions">
-                  <button className="action-btn favorite" title="Add to favorites">
-                    <i className="far fa-heart"></i>
-                  </button>
-                  <button className="action-btn share" title="Share recipe">
-                    <i className="fas fa-share-alt"></i>
-                  </button>
-                  <button className="action-btn fullscreen" title="Fullscreen">
-                    <i className="fas fa-expand"></i>
-                  </button>
-                </div>
               </div>
               <div className="recipe-info">
                 <h1 className="recipe-title">{recipe.title}</h1>

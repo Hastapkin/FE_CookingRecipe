@@ -238,11 +238,6 @@ function Recipes() {
                           <i className="fas fa-play"></i> Watch Recipe
                         </button>
                       </div>
-                      <div className="recipe-actions">
-                        <button className="action-btn favorite-btn" data-tooltip="Add to favorites">
-                          <i className="far fa-heart"></i>
-                        </button>
-                      </div>
                     </div>
                     <div className="recipe-content">
                       <div className="recipe-header">
