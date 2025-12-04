@@ -148,14 +148,6 @@ function Register() {
                 {status==='loading' ? 'Creating account...' : 'Create Account'}
               </button>
             </form>
-            <div style={{display:'flex', alignItems:'center', gap:'12px', margin:'16px 0'}}>
-              <div style={{height:1, background:'#E5E7EB', flex:1}}></div>
-              <span style={{color:'#6B7280', fontSize:14}}>or</span>
-              <div style={{height:1, background:'#E5E7EB', flex:1}}></div>
-            </div>
-            <button className="btn btn-outline" onClick={handleGoogle}>
-              <i className="fab fa-google"></i> Continue with Google
-            </button>
             <p style={{marginTop:'16px'}}>Already have an account? <Link to="/login">Login</Link></p>
           </div>
         </div>
