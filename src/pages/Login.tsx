@@ -31,11 +31,6 @@ function Login() {
     }
   }
 
-  const handleGoogle = () => {
-    // Placeholder for Google OAuth
-    window.location.href = '/api/auth/google'
-  }
-
   return (
     <main>
       <section className="page-header">

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Transaction } from '../../services/transactions'
-import { getAllTransactions, verifyTransaction, rejectTransaction } from '../../services/transactions'
+import { getAllTransactions, verifyTransaction, rejectTransaction, getTransaction } from '../../services/transactions'
 import { getUserSession } from '../../services/auth'
 
 function AdminTransactions() {
@@ -13,6 +13,9 @@ function AdminTransactions() {
   const [processingId, setProcessingId] = useState<number | null>(null)
   const [rejectNote, setRejectNote] = useState<string>('')
   const [showRejectModal, setShowRejectModal] = useState<number | null>(null)
+  const [showDetailModal, setShowDetailModal] = useState<number | null>(null)
+  const [transactionDetail, setTransactionDetail] = useState<Transaction | null>(null)
+  const [loadingDetail, setLoadingDetail] = useState(false)
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -61,6 +64,21 @@ function AdminTransactions() {
   const handleViewProof = (proofUrl: string) => {
     if (proofUrl) {
       window.open(proofUrl, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  const handleViewDetail = async (transactionId: number) => {
+    try {
+      setShowDetailModal(transactionId)
+      setLoadingDetail(true)
+      setTransactionDetail(null)
+      const detail = await getTransaction(transactionId)
+      setTransactionDetail(detail)
+    } catch (error) {
+      console.error('Failed to load transaction detail:', error)
+      // Error will be displayed in the modal
+    } finally {
+      setLoadingDetail(false)
     }
   }
 
@@ -239,6 +257,13 @@ function AdminTransactions() {
                     <span>{transaction.recipeCount || transaction.recipes?.length || 0}</span>
                     <span>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button
+                          className="btn btn-outline btn-small"
+                          onClick={() => handleViewDetail(transaction.id)}
+                          title="View transaction detail"
+                        >
+                          <i className="fas fa-info-circle"></i> View Detail
+                        </button>
                         {transaction.paymentProof && 
                          typeof transaction.paymentProof === 'string' && 
                          transaction.paymentProof.trim() !== '' ? (
@@ -303,6 +328,164 @@ function AdminTransactions() {
           )}
         </div>
       </section>
+
+      {/* Transaction Detail Modal */}
+      {showDetailModal && (
+        <div className="modal-overlay" onClick={() => {
+          setShowDetailModal(null)
+          setTransactionDetail(null)
+        }}>
+          <div className="modal-content" style={{ maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Transaction Detail #{showDetailModal}</h3>
+              <button
+                className="modal-close"
+                onClick={() => {
+                  setShowDetailModal(null)
+                  setTransactionDetail(null)
+                }}
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="modal-body">
+              {loadingDetail ? (
+                <div className="loading-container">
+                  <div className="loading-spinner"></div>
+                  <p>Loading transaction details...</p>
+                </div>
+              ) : transactionDetail ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {/* Basic Information */}
+                  <div>
+                    <h4 style={{ marginBottom: '12px', color: '#333' }}>Basic Information</h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div>
+                        <strong>Transaction ID:</strong>
+                        <p>#{transactionDetail.id}</p>
+                      </div>
+                      <div>
+                        <strong>User ID:</strong>
+                        <p>{transactionDetail.userId}</p>
+                      </div>
+                      <div>
+                        <strong>Total Amount:</strong>
+                        <p style={{ color: '#e74c3c', fontWeight: 'bold' }}>${transactionDetail.totalAmount.toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <strong>Payment Method:</strong>
+                        <p>{transactionDetail.paymentMethod || '—'}</p>
+                      </div>
+                      <div>
+                        <strong>Status:</strong>
+                        <p>
+                          <span className={`status-badge ${getStatusColor(transactionDetail.status)}`}>
+                            <i className={getStatusIcon(transactionDetail.status)}></i>
+                            {getStatusLabel(transactionDetail.status)}
+                          </span>
+                        </p>
+                      </div>
+                      <div>
+                        <strong>Created At:</strong>
+                        <p>{formatDate(transactionDetail.createdAt)}</p>
+                      </div>
+                      {transactionDetail.verifiedAt && (
+                        <div>
+                          <strong>Verified At:</strong>
+                          <p>{formatDate(transactionDetail.verifiedAt)}</p>
+                        </div>
+                      )}
+                      {transactionDetail.verifiedBy && (
+                        <div>
+                          <strong>Verified By (Admin ID):</strong>
+                          <p>{transactionDetail.verifiedBy}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Recipes */}
+                  {transactionDetail.recipes && transactionDetail.recipes.length > 0 && (
+                    <div>
+                      <h4 style={{ marginBottom: '12px', color: '#333' }}>Recipes ({transactionDetail.recipes.length})</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {transactionDetail.recipes.map((recipe) => (
+                          <div key={recipe.recipeId} style={{ 
+                            display: 'flex', 
+                            gap: '12px', 
+                            padding: '12px', 
+                            border: '1px solid #ddd', 
+                            borderRadius: '8px',
+                            alignItems: 'center'
+                          }}>
+                            {recipe.videoThumbnail && (
+                              <img 
+                                src={recipe.videoThumbnail} 
+                                alt={recipe.title}
+                                style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '4px' }}
+                              />
+                            )}
+                            <div style={{ flex: 1 }}>
+                              <strong>{recipe.title}</strong>
+                              <p style={{ margin: '4px 0 0 0', color: '#666' }}>Price: ${recipe.price.toFixed(2)}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payment Proof */}
+                  {transactionDetail.paymentProof && typeof transactionDetail.paymentProof === 'string' && transactionDetail.paymentProof.trim() !== '' && (
+                    <div>
+                      <h4 style={{ marginBottom: '12px', color: '#333' }}>Payment Proof</h4>
+                      <div style={{ marginBottom: '8px' }}>
+                        <button
+                          className="btn btn-outline"
+                          onClick={() => handleViewProof(transactionDetail.paymentProof!)}
+                        >
+                          <i className="fas fa-image"></i> View Payment Proof
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Admin Notes */}
+                  {transactionDetail.adminNotes && (
+                    <div>
+                      <h4 style={{ marginBottom: '12px', color: '#333' }}>Admin Notes</h4>
+                      <div style={{ 
+                        padding: '12px', 
+                        backgroundColor: '#f8f9fa', 
+                        borderRadius: '8px',
+                        border: '1px solid #ddd'
+                      }}>
+                        <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{transactionDetail.adminNotes}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="error-message">
+                  <i className="fas fa-exclamation-triangle"></i>
+                  <p>Failed to load transaction details</p>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setShowDetailModal(null)
+                  setTransactionDetail(null)
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reject Modal */}
       {showRejectModal && (
