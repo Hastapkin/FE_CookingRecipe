@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Recipe } from '../../types/recipe'
 import { fetchRecipes } from '../../services/recipes'
-import { getUserSession } from '../../services/auth'
 
 function AdminRecipes() {
   const navigate = useNavigate()
@@ -11,20 +10,7 @@ function AdminRecipes() {
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
 
-  const session = getUserSession()
-  const isAdmin = (session?.user.role || '').toLowerCase() === 'admin'
-
   useEffect(() => {
-    if (!session) {
-      navigate('/login')
-      return
-    }
-
-    if (!isAdmin) {
-      navigate('/')
-      return
-    }
-
     const loadRecipes = async () => {
       try {
         setLoading(true)
@@ -40,7 +26,7 @@ function AdminRecipes() {
     }
 
     loadRecipes()
-  }, [isAdmin, navigate, session?.user?.id])
+  }, [navigate])
 
   const filteredRecipes = useMemo<Recipe[]>(() => {
     if (!search.trim()) return recipes
@@ -51,10 +37,6 @@ function AdminRecipes() {
       (recipe.description || '').toLowerCase().includes(term)
     )
   }, [recipes, search])
-
-  if (!isAdmin) {
-    return null
-  }
 
   return (
     <main className="admin-page">

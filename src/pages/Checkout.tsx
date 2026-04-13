@@ -65,7 +65,11 @@ function Checkout() {
           recipeId: recipe.recipeId,
           title: recipe.title,
           price: recipe.price,
-          videoThumbnail: recipe.videoThumbnail || undefined
+          videoThumbnail: recipe.videoThumbnail || undefined,
+          difficulty: '',
+          cookingTime: 0,
+          category: '',
+          addedAt: transaction.createdAt
         }))
         setCartItems(items)
       }

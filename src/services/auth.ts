@@ -1,4 +1,11 @@
 import { apiGet, apiPost } from './api'
+import {
+  APP_EVENTS,
+  clearStoredSession,
+  emitAppEvent,
+  readStoredSession,
+  writeStoredSession
+} from '../config/session'
 
 export interface User {
   id: number
@@ -61,37 +68,45 @@ export async function uploadProfilePicture(file: File): Promise<UploadProfilePic
 
 // Helper functions for managing user session
 export function saveUserSession(user: User, token: string): void {
-  localStorage.setItem('user', JSON.stringify({ ...user, token }))
-  // Dispatch custom event to notify Layout component
-  window.dispatchEvent(new Event('authStateChanged'))
+  writeStoredSession({ ...user, token })
+  emitAppEvent(APP_EVENTS.AUTH_STATE_CHANGED)
 }
 
 export function getUserSession(): { user: User; token: string } | null {
-  const userStr = localStorage.getItem('user')
-  if (!userStr) return null
-  
-  try {
-    const data = JSON.parse(userStr)
-    const rawUser = data.user ? data.user : data
-    return {
-      user: {
-        id: rawUser.id,
-        username: rawUser.username,
-        profilePicture: rawUser.profilePicture,
-        role: rawUser.role,
-        createdAt: rawUser.createdAt
-      },
-      token: data.token
-    }
-  } catch {
+  const data = readStoredSession() as {
+    user?: User
+    token?: string
+    id?: number
+    username?: string
+    profilePicture?: string | null
+    role?: string
+    createdAt?: string
+  } | null
+
+  if (!data) {
     return null
+  }
+
+  const rawUser = data.user ? data.user : data
+  if (!rawUser?.id || !rawUser?.username || !rawUser?.role || !data.token) {
+    return null
+  }
+
+  return {
+    user: {
+      id: rawUser.id,
+      username: rawUser.username,
+      profilePicture: rawUser.profilePicture,
+      role: rawUser.role,
+      createdAt: rawUser.createdAt
+    },
+    token: data.token
   }
 }
 
 export function clearUserSession(): void {
-  localStorage.removeItem('user')
-  // Dispatch custom event to notify Layout component
-  window.dispatchEvent(new Event('authStateChanged'))
+  clearStoredSession()
+  emitAppEvent(APP_EVENTS.AUTH_STATE_CHANGED)
 }
 
 export function isAuthenticated(): boolean {

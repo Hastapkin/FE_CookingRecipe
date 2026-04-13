@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { Recipe } from '../../types/recipe'
 import { deleteRecipe, fetchRecipeById, uploadRecipeThumbnail } from '../../services/recipes'
-import { getUserSession } from '../../services/auth'
 import YouTubePlayer from '../../components/YouTubePlayer'
 
 function AdminRecipeDetail() {
@@ -16,17 +15,9 @@ function AdminRecipeDetail() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [thumbnailUploading, setThumbnailUploading] = useState(false)
 
-  const session = getUserSession()
-  const isAdmin = (session?.user.role || '').toLowerCase() === 'admin'
-
   useEffect(() => {
-    if (!session) {
-      navigate('/login')
-      return
-    }
-
-    if (!isAdmin || !recipeId) {
-      navigate('/')
+    if (!recipeId) {
+      navigate('/admin/recipes')
       return
     }
 
@@ -48,7 +39,7 @@ function AdminRecipeDetail() {
     }
 
     loadRecipe()
-  }, [isAdmin, navigate, recipeId, session?.user?.id])
+  }, [navigate, recipeId])
 
   const handleDelete = async () => {
     if (!recipeId) return
@@ -86,10 +77,6 @@ function AdminRecipeDetail() {
       setThumbnailUploading(false)
       event.target.value = ''
     }
-  }
-
-  if (!isAdmin) {
-    return null
   }
 
   if (loading) {

@@ -1,9 +1,8 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 
 function CheckoutSuccess() {
   const navigate = useNavigate()
-  const location = useLocation()
   const [showNotification, setShowNotification] = useState(true)
 
   useEffect(() => {

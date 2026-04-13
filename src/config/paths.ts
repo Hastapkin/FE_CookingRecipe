@@ -1,0 +1,20 @@
+export const ROUTES = {
+  HOME: '/',
+  RECIPES: '/recipes',
+  RECIPE_DETAIL: '/recipe-detail/:id',
+  CART: '/cart',
+  CHECKOUT: '/checkout',
+  CHECKOUT_SUCCESS: '/checkout/success',
+  MY_ORDERS: '/my-orders',
+  MY_RECIPES: '/my-recipes',
+  PROFILE_PICTURE: '/profile-picture',
+  ABOUT: '/about',
+  CONTACT: '/contact',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  ADMIN_RECIPES: '/admin/recipes',
+  ADMIN_RECIPE_NEW: '/admin/recipes/new',
+  ADMIN_RECIPE_EDIT: '/admin/recipes/:id/edit',
+  ADMIN_RECIPE_DETAIL: '/admin/recipes/:id',
+  ADMIN_TRANSACTIONS: '/admin/transactions'
+} as const

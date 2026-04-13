@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
 import { getUserSession, clearUserSession, getProfile, type User } from '../services/auth'
 import { getCart } from '../services/cart'
+import { APP_EVENTS, writeStoredSession } from '../config/session'
 
 function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -27,7 +28,7 @@ function Layout() {
         // Update session with fresh data
         if (session.token) {
           const updatedSession = { ...profile, token: session.token }
-          localStorage.setItem('user', JSON.stringify(updatedSession))
+          writeStoredSession(updatedSession)
         }
       } catch (error) {
         // Fallback to session data if profile fetch fails
@@ -69,18 +70,18 @@ function Layout() {
       updateUser()
       loadCartCount()
     }
-    window.addEventListener('authStateChanged', authHandler)
+    window.addEventListener(APP_EVENTS.AUTH_STATE_CHANGED, authHandler)
     
     // Listen for cart changes
     const cartHandler = () => {
       loadCartCount()
     }
-    window.addEventListener('cartChanged', cartHandler)
+    window.addEventListener(APP_EVENTS.CART_CHANGED, cartHandler)
     
     return () => {
       window.removeEventListener('storage', handler)
-      window.removeEventListener('authStateChanged', authHandler)
-      window.removeEventListener('cartChanged', cartHandler)
+      window.removeEventListener(APP_EVENTS.AUTH_STATE_CHANGED, authHandler)
+      window.removeEventListener(APP_EVENTS.CART_CHANGED, cartHandler)
     }
   }, [])
 

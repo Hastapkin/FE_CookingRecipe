@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Transaction } from '../../services/transactions'
 import { getAllTransactions, verifyTransaction, rejectTransaction, getTransaction } from '../../services/transactions'
-import { getUserSession } from '../../services/auth'
 
 function AdminTransactions() {
   const navigate = useNavigate()
@@ -23,9 +22,6 @@ function AdminTransactions() {
     totalPages: 1
   })
 
-  const session = getUserSession()
-  const isAdmin = (session?.user.role || '').toLowerCase() === 'admin'
-
   const loadTransactions = useCallback(async () => {
     try {
       setLoading(true)
@@ -43,18 +39,8 @@ function AdminTransactions() {
   }, [statusFilter, pagination.page, pagination.limit])
 
   useEffect(() => {
-    if (!session) {
-      navigate('/login')
-      return
-    }
-
-    if (!isAdmin) {
-      navigate('/')
-      return
-    }
-
     loadTransactions()
-  }, [isAdmin, navigate, session?.user?.id, loadTransactions])
+  }, [navigate, loadTransactions])
 
   const handleStatusFilterChange = (newStatus: 'all' | 'pending' | 'verified' | 'rejected') => {
     setStatusFilter(newStatus)
@@ -158,10 +144,6 @@ function AdminTransactions() {
       case 'rejected': return 'Rejected'
       default: return status
     }
-  }
-
-  if (!isAdmin) {
-    return null
   }
 
   return (

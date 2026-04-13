@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { createRecipe, fetchRecipeById, updateRecipe } from '../../services/recipes'
-import { getUserSession } from '../../services/auth'
 import type { Recipe } from '../../types/recipe'
 
 function sanitizeRecipeForEditing(recipe: Recipe): Record<string, unknown> {
@@ -30,20 +29,7 @@ function AdminRecipeEditor() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const session = getUserSession()
-  const isAdmin = (session?.user.role || '').toLowerCase() === 'admin'
-
   useEffect(() => {
-    if (!session) {
-      navigate('/login')
-      return
-    }
-
-    if (!isAdmin) {
-      navigate('/')
-      return
-    }
-
     if (isEdit && recipeId) {
       const loadRecipe = async () => {
         try {
@@ -80,19 +66,10 @@ function AdminRecipeEditor() {
   "nutrition": []
 }`)
     }
-  }, [isAdmin, isEdit, navigate, recipeId, session?.user?.id])
+  }, [isEdit, navigate, recipeId])
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!session) {
-      navigate('/login')
-      return
-    }
-
-    if (!isAdmin) {
-      navigate('/')
-      return
-    }
 
     try {
       setSaving(true)
@@ -118,10 +95,6 @@ function AdminRecipeEditor() {
     } finally {
       setSaving(false)
     }
-  }
-
-  if (!isAdmin) {
-    return null
   }
 
   return (

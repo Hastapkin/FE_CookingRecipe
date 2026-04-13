@@ -1,17 +1,10 @@
+import { getStoredToken } from '../config/session'
+
 const API_BASE = import.meta.env.VITE_API_BASE || 'https://recipe-api-t5t0.onrender.com/api'
 
 // Get authentication token from localStorage
 function getAuthToken(): string | null {
-  const userStr = localStorage.getItem('user')
-  if (userStr) {
-    try {
-      const user = JSON.parse(userStr)
-      return user.token || null
-    } catch {
-      return null
-    }
-  }
-  return null
+  return getStoredToken()
 }
 
 // Build headers with authentication if available

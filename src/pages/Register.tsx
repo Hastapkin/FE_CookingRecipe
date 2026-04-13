@@ -45,10 +45,6 @@ function Register() {
     }
   }
 
-  const handleGoogle = () => {
-    window.location.href = '/api/auth/google'
-  }
-
   return (
     <main>
       <section className="page-header">
