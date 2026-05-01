@@ -1,15 +1,21 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { fetchCourseOverviewDetail, type CourseOverviewDetail } from '../services/courses'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { fetchCourseOverviewDetail, fetchPurchasedCourseIds, type CourseOverviewDetail } from '../services/courses'
+import { addToCart } from '../services/cart'
+import { getUserSession } from '../services/auth'
 
 function CourseDetail() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [detail, setDetail] = useState<CourseOverviewDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [ownsCourse, setOwnsCourse] = useState(false)
+  const [addingToCart, setAddingToCart] = useState(false)
   const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({})
 
   useEffect(() => {
     if (!id) return
+    window.scrollTo(0, 0)
     let cancelled = false
     ;(async () => {
       setLoading(true)
@@ -31,6 +37,46 @@ function CourseDetail() {
       cancelled = true
     }
   }, [id])
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      if (!detail?.course?.id || !getUserSession()) {
+        if (!cancelled) setOwnsCourse(false)
+        return
+      }
+      const ids = await fetchPurchasedCourseIds()
+      if (!cancelled) {
+        setOwnsCourse(ids.includes(detail.course.id))
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [detail?.course.id])
+
+  const handleAddToCart = async () => {
+    if (!detail?.course.id) return
+    if (!getUserSession()) {
+      navigate(`/login`)
+      return
+    }
+    if (ownsCourse) return
+    setAddingToCart(true)
+    try {
+      const result = await addToCart(detail.course.id)
+      if (result.success || result.alreadyInCart) {
+        window.dispatchEvent(new Event('cartChanged'))
+        window.alert(result.alreadyInCart ? 'This course is already in your cart.' : 'Course added to cart.')
+        return
+      }
+      window.alert(result.message || 'Could not add to cart.')
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : 'Could not add to cart.')
+    } finally {
+      setAddingToCart(false)
+    }
+  }
 
   const formatDate = (value?: string | null) => {
     if (!value) return 'N/A'
@@ -138,8 +184,31 @@ function CourseDetail() {
             <p className="course-hero-description">
               {course.description || 'No description provided.'}
             </p>
-            <div className="course-hero-price">
-              <span className="current-price small">{formatPrice(course.price)}</span>
+            {!ownsCourse && (
+              <div className="course-hero-price">
+                <span className="current-price small">{formatPrice(course.price)}</span>
+              </div>
+            )}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+              {ownsCourse ? (
+                <Link to={`/courses/${course.id}/learn`} className="btn btn-primary">
+                  Start learning
+                </Link>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={addingToCart}
+                    onClick={handleAddToCart}
+                  >
+                    {addingToCart ? 'Adding…' : 'Add to cart'}
+                  </button>
+                  <Link to="/cart" className="btn btn-outline">
+                    View cart
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -147,12 +216,6 @@ function CourseDetail() {
 
       <section className="recipes-section">
         <div className="container">
-
-          <div className="section-header" style={{ marginBottom: '1rem' }}>
-            <h2 className="section-title">Modules & Lessons</h2>
-            <p className="section-subtitle">Review modules and lesson updates</p>
-          </div>
-
           {modules.length === 0 ? (
             <div className="no-results">
               <i className="fas fa-folder-open"></i>
@@ -199,28 +262,23 @@ function CourseDetail() {
                         <div className="lesson-list">
                           {module.lessons.map((lesson) => (
                             <div className="lesson-item" key={lesson.id}>
-                              <div>
-                                <h4>{lesson.title}</h4>
-                                <p>{lesson.description || 'No lesson description.'}</p>
-                                <div className="lesson-meta">
-                                  {lesson.contentType && (
-                                    <span>
-                                      <i className="fas fa-tag"></i> {lesson.contentType}
-                                    </span>
-                                  )}
-                                  {lesson.durationMinutes && (
-                                    <span>
-                                      <i className="fas fa-clock"></i> {lesson.durationMinutes} min
-                                    </span>
-                                  )}
+                              <h4>{lesson.title}</h4>
+                              <p>{lesson.description || 'No lesson description.'}</p>
+                              <div className="lesson-meta">
+                                {lesson.contentType && (
                                   <span>
-                                    <i className="fas fa-calendar"></i> Updated {formatDate(lesson.updatedAt)}
+                                    <i className="fas fa-tag"></i> {lesson.contentType}
                                   </span>
-                                </div>
+                                )}
+                                {lesson.durationMinutes && (
+                                  <span>
+                                    <i className="fas fa-clock"></i> {lesson.durationMinutes} min
+                                  </span>
+                                )}
+                                <span>
+                                  <i className="fas fa-calendar"></i> Updated {formatDate(lesson.updatedAt)}
+                                </span>
                               </div>
-                              <button className="btn btn-outline btn-small" disabled>
-                                Lesson on hold
-                              </button>
                             </div>
                           ))}
                         </div>

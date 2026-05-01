@@ -1450,8 +1450,9 @@ section {
 }
 
 .module-title {
-  font-size: var(--text-xl);
-  margin-bottom: var(--spacing-xs);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin: 0 0 var(--spacing-xs) 0;
 }
 
 .module-subtitle {
@@ -1503,19 +1504,22 @@ section {
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--spacing-md);
+  gap: var(--spacing-xs);
   background: var(--neutral-50);
 }
 
 .lesson-item h4 {
-  margin-bottom: var(--spacing-xs);
-  font-size: var(--text-lg);
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 700;
 }
 
 .lesson-item p {
-  margin-bottom: var(--spacing-sm);
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.45;
   color: var(--text-secondary);
 }
 
@@ -1529,6 +1533,177 @@ section {
 
 .lesson-meta i {
   color: var(--primary-color);
+}
+
+/* Course learning player */
+.course-learn-page {
+  padding-top: 80px;
+}
+
+.course-learn-shell {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  min-height: calc(100vh - 80px);
+  padding: 0;
+}
+
+.course-learn-sidebar {
+  border-right: 1px solid var(--neutral-200);
+  background: var(--bg-secondary);
+  padding: var(--spacing-xl);
+  position: sticky;
+  top: 80px;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.course-learn-header h2 {
+  font-size: var(--text-xl);
+  margin-bottom: var(--spacing-sm);
+}
+
+.course-learn-header p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.course-progress-track {
+  width: 100%;
+  background: var(--neutral-200);
+  border-radius: var(--radius-full);
+  height: 10px;
+  overflow: hidden;
+  margin-bottom: var(--spacing-sm);
+}
+
+.course-progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+}
+
+.course-learn-modules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+}
+
+.course-learn-module h3 {
+  font-size: var(--text-base);
+  margin-bottom: var(--spacing-sm);
+}
+
+.course-learn-lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.course-learn-lesson {
+  border: 1px solid var(--neutral-300);
+  background: white;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.course-learn-lesson span {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.course-learn-lesson i.fa-circle-check {
+  color: var(--accent-success);
+}
+
+.course-learn-lesson small {
+  color: var(--text-tertiary);
+  text-transform: capitalize;
+}
+
+.course-learn-lesson.active {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.12);
+}
+
+.course-learn-content {
+  padding: var(--spacing-2xl);
+  background: white;
+}
+
+.course-learn-content-header h1 {
+  font-size: var(--text-3xl);
+  margin-bottom: var(--spacing-sm);
+}
+
+.course-learn-content-header p {
+  color: var(--text-secondary);
+}
+
+.course-learn-lesson-body {
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+.course-learn-lesson-body iframe {
+  width: 100%;
+  min-height: 420px;
+  border: 0;
+  border-radius: var(--radius-lg);
+}
+
+.course-learn-lesson-body.article {
+  padding: var(--spacing-xl);
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-lg);
+  background: var(--neutral-50);
+}
+
+.course-learn-complete {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-weight: 600;
+}
+
+.course-learn-lesson-body.assignment {
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  background: var(--neutral-50);
+}
+
+.assignment-question {
+  margin-bottom: var(--spacing-lg);
+}
+
+.assignment-question h4 {
+  font-size: var(--text-base);
+  margin-bottom: var(--spacing-sm);
+}
+
+.assignment-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.assignment-options label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--text-sm);
+}
+
+.course-feedback {
+  margin-top: var(--spacing-md);
+  font-weight: 600;
 }
 
 /* Locked Content Styles */
@@ -4274,6 +4449,17 @@ section {
    RESPONSIVE DESIGN
    ============================================ */
 @media (max-width: 1024px) {
+  .course-learn-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .course-learn-sidebar {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--neutral-200);
+  }
+
   .hero-container {
     grid-template-columns: 1fr;
   }

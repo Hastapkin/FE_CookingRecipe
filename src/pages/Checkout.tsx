@@ -58,19 +58,30 @@ function Checkout() {
       
       setTransactionId(transaction.id)
       
-      // Load cart items from transaction recipes
-      if (transaction.recipes && transaction.recipes.length > 0) {
-        const items: CartItem[] = transaction.recipes.map(recipe => ({
-          id: recipe.recipeId,
-          recipeId: recipe.recipeId,
-          title: recipe.title,
-          price: recipe.price,
-          videoThumbnail: recipe.videoThumbnail || undefined,
-          difficulty: '',
-          cookingTime: 0,
-          category: '',
-          addedAt: transaction.createdAt
-        }))
+      const lines = transaction.courses?.length
+        ? transaction.courses
+        : (transaction.recipes ?? [])
+      if (lines.length > 0) {
+        const items: CartItem[] = lines.map((line: { courseId?: number; recipeId?: number; title: string; price: number; videoThumbnail?: string | null; thumbnail?: string | null }) => {
+          const courseId = line.courseId ?? line.recipeId ?? 0
+          const thumb = line.thumbnail ?? line.videoThumbnail
+          return {
+            id: courseId,
+            cartId: courseId,
+            courseId,
+            recipeId: courseId,
+            title: line.title,
+            price: line.price,
+            discountedPrice: line.price,
+            thumbnail: thumb ?? undefined,
+            videoThumbnail: thumb ?? undefined,
+            difficulty: '',
+            lessonCount: 0,
+            estimatedDurationMinutes: 0,
+            cookingTime: 0,
+            category: 'Course'
+          }
+        })
         setCartItems(items)
       }
 
@@ -141,7 +152,7 @@ function Checkout() {
           setTransactionId(currentTransactionId)
 
           // Generate VietQR URL
-          const total = cartItems.reduce((sum, item) => sum + item.price, 0)
+          const total = cartItems.reduce((sum, item) => sum + (item.discountedPrice ?? item.price), 0)
           const amountVnd = Math.round(total * VIETQR_CONFIG.usdToVndRate)
           const addInfo = encodeURIComponent(`payment for order ${currentTransactionId}`)
           const accountName = encodeURIComponent(VIETQR_CONFIG.accountName)
@@ -272,7 +283,7 @@ function Checkout() {
     }
   }
 
-  const total = cartItems.reduce((sum, item) => sum + item.price, 0)
+  const total = cartItems.reduce((sum, item) => sum + (item.discountedPrice ?? item.price), 0)
 
   // Show loading state when loading existing transaction
   if (loadingExistingTransaction) {

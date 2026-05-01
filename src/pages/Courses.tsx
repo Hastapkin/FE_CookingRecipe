@@ -1,13 +1,17 @@
 // React import not required with react-jsx runtime
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { CourseOverview } from '../services/courses'
-import { fetchCourses } from '../services/courses'
+import { fetchCourses, fetchPurchasedCourseIds } from '../services/courses'
+import { addToCart } from '../services/cart'
+import { getUserSession } from '../services/auth'
 
 function Courses() {
   const navigate = useNavigate();
   const [courses, setCourses] = useState<CourseOverview[]>([]);
   const [loading, setLoading] = useState(true);
+  const [ownedCourseIds, setOwnedCourseIds] = useState<Set<number>>(() => new Set());
+  const [addingId, setAddingId] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -54,6 +58,21 @@ function Courses() {
     return () => { cancelled = true };
   }, [filters.search, filters.sortBy, currentPage]);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!getUserSession()) {
+        if (!cancelled) setOwnedCourseIds(new Set());
+        return;
+      }
+      const ids = await fetchPurchasedCourseIds();
+      if (!cancelled) setOwnedCourseIds(new Set(ids));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
@@ -65,6 +84,35 @@ function Courses() {
 
   const totalPages = pagination.totalPages || 1;
   const paginatedCourses = courses;
+
+  const handleAddToCart = async (e: MouseEvent, courseId: number) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!getUserSession()) {
+      navigate('/login');
+      return;
+    }
+    if (ownedCourseIds.has(courseId)) return;
+    setAddingId(courseId);
+    try {
+      const result = await addToCart(courseId);
+      if (result.success) {
+        window.dispatchEvent(new Event('cartChanged'));
+        return;
+      }
+      if (result.alreadyInCart) {
+        window.dispatchEvent(new Event('cartChanged'));
+        return;
+      }
+      // eslint-disable-next-line no-console
+      console.warn(result.message || 'Could not add to cart');
+      window.alert(result.message || 'Could not add to cart.');
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : 'Could not add to cart.');
+    } finally {
+      setAddingId(null);
+    }
+  };
 
   const formatDuration = (duration?: number | null) => {
     if (!duration || duration <= 0) return 'Self-paced';
@@ -132,6 +180,7 @@ function Courses() {
               <div className="recipes-grid">
                 {paginatedCourses.map((course) => {
                   const difficultyLabel = course.difficulty || 'Beginner'
+                  const owns = ownedCourseIds.has(course.id)
                   return (
                   <div
                     className="recipe-card"
@@ -191,15 +240,29 @@ function Courses() {
                           <i className="fas fa-signal"></i> {difficultyLabel}
                         </span>
                       </div>
-                      <div className="recipe-footer">
-                        <div className="price-display">
-                          <span className="current-price small">
-                            {new Intl.NumberFormat('en-US', {
-                              style: 'currency',
-                              currency: 'USD'
-                            }).format(course.price)}
-                          </span>
-                        </div>
+                      <div className="recipe-footer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        {owns ? (
+                          <span className="recipe-meta" style={{ margin: 0 }}>Purchased</span>
+                        ) : (
+                          <>
+                            <div className="price-display">
+                              <span className="current-price small">
+                                {new Intl.NumberFormat('en-US', {
+                                  style: 'currency',
+                                  currency: 'USD'
+                                }).format(course.price)}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-small"
+                              disabled={addingId === course.id}
+                              onClick={(e) => handleAddToCart(e, course.id)}
+                            >
+                              {addingId === course.id ? 'Adding…' : 'Add to cart'}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

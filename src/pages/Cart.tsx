@@ -33,8 +33,8 @@ function Cart() {
     }
   }
 
-  const handleRemove = async (recipeId: number) => {
-    const item = cartItems.find(i => i.recipeId === recipeId)
+  const handleRemove = async (courseId: number) => {
+    const item = cartItems.find(i => i.courseId === courseId)
     if (!item) return
 
     if (!confirm(`Are you sure you want to remove "${item.title}" from your cart?`)) {
@@ -42,8 +42,8 @@ function Cart() {
     }
 
     try {
-      await removeFromCart(recipeId)
-      setCartItems(prev => prev.filter(item => item.recipeId !== recipeId))
+      await removeFromCart(courseId)
+      setCartItems(prev => prev.filter(item => item.courseId !== courseId))
       // Dispatch event to update cart count in navigation
       window.dispatchEvent(new Event('cartChanged'))
     } catch (err) {
@@ -60,7 +60,7 @@ function Cart() {
     navigate('/checkout')
   }
 
-  const total = cartItems.reduce((sum, item) => sum + item.price, 0)
+  const total = cartItems.reduce((sum, item) => sum + (item.discountedPrice ?? item.price), 0)
 
   if (loading) {
     return (
@@ -99,7 +99,7 @@ function Cart() {
         <section className="page-header">
           <div className="container">
             <h1 className="page-title">Shopping Cart</h1>
-            <p className="page-subtitle">Review your selected video recipes</p>
+            <p className="page-subtitle">Review your selected courses before checkout</p>
           </div>
         </section>
 
@@ -107,7 +107,7 @@ function Cart() {
           <div className="empty-cart">
             <i className="fas fa-shopping-cart"></i>
             <h2>Your cart is empty</h2>
-            <p>Add some video recipes to get started!</p>
+            <p>Add courses from the catalog to get started.</p>
             <button 
               className="btn btn-primary"
               onClick={() => navigate('/courses')}
@@ -125,7 +125,7 @@ function Cart() {
       <section className="page-header">
         <div className="container">
           <h1 className="page-title">Shopping Cart</h1>
-          <p className="page-subtitle">Review your selected video recipes</p>
+          <p className="page-subtitle">Review your selected courses before checkout</p>
         </div>
       </section>
 
@@ -137,8 +137,8 @@ function Cart() {
               {cartItems.map(item => (
                 <div key={item.id} className="cart-item">
                   <div className="item-image">
-                    {item.videoThumbnail ? (
-                      <img src={item.videoThumbnail} alt={item.title} />
+                    {(item.videoThumbnail ?? item.thumbnail) ? (
+                      <img src={item.videoThumbnail ?? item.thumbnail ?? ''} alt={item.title} />
                     ) : (
                       <div className="placeholder-image">
                         <i className="fas fa-image"></i>
@@ -148,17 +148,17 @@ function Cart() {
                   <div className="item-details">
                     <h4>{item.title}</h4>
                     <div className="item-meta">
-                      <span className="item-category">{item.category}</span>
-                      <span className="item-difficulty">{item.difficulty}</span>
+                      <span className="item-category">{item.lessonCount != null ? `${item.lessonCount} lessons` : 'Course'}</span>
+                      <span className="item-difficulty">{item.difficulty || '—'}</span>
                       <span className="item-time">
-                        <i className="fas fa-clock"></i> {item.cookingTime} min
+                        <i className="fas fa-clock"></i> {item.estimatedDurationMinutes ?? item.cookingTime ?? 0} min
                       </span>
                     </div>
                   </div>
                   <div className="item-price">
-                    <span>${item.price.toFixed(2)}</span>
+                    <span>${(item.discountedPrice ?? item.price).toFixed(2)}</span>
                     <button 
-                      onClick={() => handleRemove(item.recipeId)}
+                      onClick={() => handleRemove(item.courseId)}
                       className="remove-btn"
                       title="Remove item"
                     >
@@ -176,7 +176,7 @@ function Cart() {
               {cartItems.map(item => (
                 <div key={item.id} className="order-item-line">
                   <span className="item-name">{item.title}</span>
-                  <span className="item-price">${item.price.toFixed(2)}</span>
+                  <span className="item-price">${(item.discountedPrice ?? item.price).toFixed(2)}</span>
                 </div>
               ))}
               <div className="order-totals">
@@ -197,7 +197,7 @@ function Cart() {
 
             <button
               className="btn btn-outline btn-large"
-              onClick={() => navigate('/recipes')}
+              onClick={() => navigate('/courses')}
               style={{ marginTop: 'var(--spacing-md)' }}
             >
               <i className="fas fa-arrow-left"></i>

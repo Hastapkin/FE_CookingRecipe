@@ -46,7 +46,6 @@ function MyOrders() {
       // Always get all transactions to show correct counts
       const transactions = await getTransactions()
 
-      // getUserTransactions now includes recipes, so we can use them directly
       const ordersWithDetails = transactions.map((transaction) => ({
         id: transaction.id,
         totalAmount: transaction.totalAmount,
@@ -55,11 +54,11 @@ function MyOrders() {
         paymentProof: transaction.paymentProof,
         createdAt: transaction.createdAt,
         adminNotes: transaction.adminNotes,
-        items: (transaction.recipes || []).map((r: any) => ({
-          recipeId: r.recipeId,
+        items: (transaction.courses?.length ? transaction.courses : transaction.recipes || []).map((r: { recipeId?: number; courseId?: number; title: string; price: number; videoThumbnail?: string | null; thumbnail?: string | null }) => ({
+          recipeId: r.courseId ?? r.recipeId ?? 0,
           title: r.title,
           price: r.price,
-          videoThumbnail: r.videoThumbnail
+          videoThumbnail: r.thumbnail ?? r.videoThumbnail
         }))
       } as Order))
 

@@ -1,5 +1,5 @@
 import { apiGet, apiPost, apiPut, apiDelete, apiPostFormData } from './api'
-import type { Course, Recipe } from '../types/course'
+import type { Recipe } from '../types/course'
 
 export type CourseOverview = {
   id: number;
@@ -48,6 +48,56 @@ export type CourseOverviewDetail = {
     updatedAt?: string | null;
   };
   modules: CourseModule[];
+}
+
+export type AssignmentQuestion = {
+  question: string;
+  options: string[];
+  correct: number;
+};
+
+export type CourseLearningLesson = {
+  id: number;
+  title: string;
+  description?: string | null;
+  order: number;
+  contentType?: string | null;
+  durationMinutes?: number | null;
+  isCompleted: boolean;
+  score?: number | null;
+  content: {
+    articleText?: string | null;
+    videoUrl?: string | null;
+    videoDuration?: number | null;
+    assignmentQuestions: AssignmentQuestion[];
+    passingScore: number;
+  };
+};
+
+export type CourseLearningModule = {
+  id: number;
+  title: string;
+  description?: string | null;
+  order: number;
+  lessons: CourseLearningLesson[];
+};
+
+export type CourseLearningDetail = {
+  course: {
+    id: number;
+    title: string;
+    description?: string | null;
+    thumbnail?: string | null;
+    difficulty?: string | null;
+    duration?: number | null;
+    moduleCount?: number | null;
+  };
+  modules: CourseLearningModule[];
+  progress: {
+    completedLessons: number;
+    totalLessons: number;
+    percent: number;
+  };
 }
 
 type CoursesOverviewResponse = {
@@ -101,8 +151,70 @@ type CourseOverviewDetailResponse = {
   data: CourseOverviewDetail;
 }
 
+type CourseLearningDetailResponse = {
+  success: boolean;
+  data: CourseLearningDetail;
+}
+
+type AssignmentSubmitResponse = {
+  success: boolean;
+  data: {
+    score: number;
+    passed: boolean;
+    passingScore: number;
+    learning: CourseLearningDetail;
+  };
+}
+
 export async function fetchCourseOverviewDetail(id: number): Promise<CourseOverviewDetail> {
   const res = await apiGet<CourseOverviewDetailResponse>(`/courses/${id}`)
+  return res.data
+}
+
+type PurchasesResponse = {
+  success: boolean
+  data: { courseIds: number[] }
+}
+
+/** Course IDs the signed-in user has already purchased. Returns [] when not authenticated or on error. */
+export async function fetchPurchasedCourseIds(): Promise<number[]> {
+  try {
+    const res = await apiGet<PurchasesResponse>('/courses/me/purchases', true)
+    const ids = res.data.courseIds ?? []
+    return ids.map((n) => Number(n))
+  } catch {
+    return []
+  }
+}
+
+export async function fetchCourseLearningDetail(id: number): Promise<CourseLearningDetail> {
+  const res = await apiGet<CourseLearningDetailResponse>(`/courses/${id}/learn`, true)
+  return res.data
+}
+
+export async function updateLessonProgress(
+  courseId: number,
+  lessonId: number,
+  isCompleted: boolean
+): Promise<CourseLearningDetail> {
+  const res = await apiPut<CourseLearningDetailResponse>(
+    `/courses/${courseId}/lessons/${lessonId}/progress`,
+    { isCompleted },
+    true
+  )
+  return res.data
+}
+
+export async function submitAssignment(
+  courseId: number,
+  lessonId: number,
+  answers: number[]
+): Promise<{ score: number; passed: boolean; passingScore: number; learning: CourseLearningDetail }> {
+  const res = await apiPost<AssignmentSubmitResponse>(
+    `/courses/${courseId}/lessons/${lessonId}/assignment/submit`,
+    { answers },
+    true
+  )
   return res.data
 }
 

@@ -1,8 +1,7 @@
 // React import not required with react-jsx runtime
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { addToCart } from '../services/cart'
-import { isAuthenticated, getUserSession } from '../services/auth'
+import { getUserSession } from '../services/auth'
 import YouTubePlayer from '../components/YouTubePlayer'
 import VideoPreview from '../components/VideoPreview'
 import PriceButton from '../components/PriceButton'
@@ -232,29 +231,8 @@ function Home() {
                       price={recipe.price}
                       isForSale={recipe.isForSale}
                       size="small"
-                      onPurchase={async () => {
-                        if (!isAuthenticated()) {
-                          navigate('/login');
-                          return;
-                        }
-                        try {
-                          await addToCart(recipe.id);
-                          // Dispatch event to update cart count in navigation
-                          window.dispatchEvent(new Event('cartChanged'))
-                          // Stay on page to continue browsing
-                        } catch (error) {
-                          const errorMessage = error instanceof Error ? error.message : String(error);
-                          // Check if item is already in cart
-                          if (errorMessage.toLowerCase().includes('already') || 
-                              errorMessage.toLowerCase().includes('duplicate') ||
-                              errorMessage.toLowerCase().includes('exists')) {
-                            alert('Item is already in cart');
-                            navigate('/cart');
-                          } else {
-                            console.error('Failed to add to cart', error);
-                            alert('Failed to add recipe to cart. Please try again.');
-                          }
-                        }
+                      onPurchase={() => {
+                        navigate('/courses')
                       }}
                     />
                     <div className="recipe-stats">

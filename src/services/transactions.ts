@@ -12,10 +12,21 @@ export interface Transaction {
   verifiedAt?: string | null
   verifiedBy?: number | null
   recipeCount?: number
-  recipes?: Array<{
-    recipeId: number
+  courseCount?: number
+  courses?: Array<{
+    courseId: number
+    recipeId?: number
     title: string
     videoThumbnail?: string | null
+    thumbnail?: string | null
+    price: number
+  }>
+  recipes?: Array<{
+    recipeId: number
+    courseId?: number
+    title: string
+    videoThumbnail?: string | null
+    thumbnail?: string | null
     price: number
   }>
 }

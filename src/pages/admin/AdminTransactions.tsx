@@ -220,7 +220,7 @@ function AdminTransactions() {
                   <span>Payment Method</span>
                   <span>Status</span>
                   <span>Date</span>
-                  <span>Recipes</span>
+                  <span>Courses</span>
                   <span>Actions</span>
                 </div>
                 {transactions.map((transaction) => (
@@ -236,7 +236,7 @@ function AdminTransactions() {
                       </span>
                     </span>
                     <span>{formatDate(transaction.createdAt)}</span>
-                    <span>{transaction.recipeCount || transaction.recipes?.length || 0}</span>
+                    <span>{transaction.courseCount ?? transaction.recipeCount ?? transaction.recipes?.length ?? transaction.courses?.length ?? 0}</span>
                     <span>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button
@@ -386,13 +386,21 @@ function AdminTransactions() {
                     </div>
                   </div>
 
-                  {/* Recipes */}
-                  {transactionDetail.recipes && transactionDetail.recipes.length > 0 && (
+                  {/* Courses (line items) */}
+                  {(((transactionDetail.courses ?? transactionDetail.recipes) || []).length > 0) && (
                     <div>
-                      <h4 style={{ marginBottom: '12px', color: '#333' }}>Recipes ({transactionDetail.recipes.length})</h4>
+                      {(() => {
+                        const rows = transactionDetail.courses?.length ? transactionDetail.courses : (transactionDetail.recipes ?? []);
+                        const count = rows.length;
+                        return (
+                          <>
+                      <h4 style={{ marginBottom: '12px', color: '#333' }}>Courses ({count})</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {transactionDetail.recipes.map((recipe) => (
-                          <div key={recipe.recipeId} style={{ 
+                        {rows.map((row) => {
+                          const keyId = row.courseId ?? row.recipeId ?? row.title;
+                          const thumb = row.thumbnail ?? row.videoThumbnail;
+                          return (
+                          <div key={keyId} style={{ 
                             display: 'flex', 
                             gap: '12px', 
                             padding: '12px', 
@@ -400,20 +408,24 @@ function AdminTransactions() {
                             borderRadius: '8px',
                             alignItems: 'center'
                           }}>
-                            {recipe.videoThumbnail && (
+                            {thumb && (
                               <img 
-                                src={recipe.videoThumbnail} 
-                                alt={recipe.title}
+                                src={thumb} 
+                                alt={row.title}
                                 style={{ width: '80px', height: '60px', objectFit: 'cover', borderRadius: '4px' }}
                               />
                             )}
                             <div style={{ flex: 1 }}>
-                              <strong>{recipe.title}</strong>
-                              <p style={{ margin: '4px 0 0 0', color: '#666' }}>Price: ${recipe.price.toFixed(2)}</p>
+                              <strong>{row.title}</strong>
+                              <p style={{ margin: '4px 0 0 0', color: '#666' }}>Price: ${row.price.toFixed(2)}</p>
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
 

@@ -12,6 +12,7 @@ import MyCourses from './pages/MyCourses'
 import NotFound from './pages/NotFound'
 import ProfilePicture from './pages/ProfilePicture'
 import CourseDetail from './pages/CourseDetail'
+import CourseLearn from './pages/CourseLearn'
 import Courses from './pages/Courses'
 import Register from './pages/Register'
 import AdminCourseDetail from './pages/admin/AdminCourseDetail'
@@ -29,6 +30,7 @@ function AppRoutes() {
         <Route path={ROUTES.HOME} element={<Home />} />
         <Route path={ROUTES.COURSES} element={<Courses />} />
         <Route path={ROUTES.COURSE_DETAIL} element={<CourseDetail />} />
+        <Route path={ROUTES.COURSE_LEARN} element={<AuthMiddleware><CourseLearn /></AuthMiddleware>} />
 
         <Route path={ROUTES.CART} element={<AuthMiddleware><Cart /></AuthMiddleware>} />
         <Route path={ROUTES.CHECKOUT} element={<AuthMiddleware><Checkout /></AuthMiddleware>} />
