@@ -1,24 +1,127 @@
 import { apiGet, apiPost, apiPut, apiDelete, apiPostFormData } from './api'
-import type { Recipe } from '../types/recipe'
+import type { Course, Recipe } from '../types/course'
+
+export type CourseOverview = {
+  id: number;
+  title: string;
+  description?: string;
+  thumbnail?: string | null;
+  price: number;
+  difficulty: string;
+  duration?: number | null;
+  moduleCount: number;
+  rating: number;
+}
+
+export type CourseModuleLesson = {
+  id: number;
+  title: string;
+  description?: string | null;
+  contentType?: string | null;
+  durationMinutes?: number | null;
+  updatedAt?: string | null;
+}
+
+export type CourseModule = {
+  id: number;
+  title: string;
+  description?: string | null;
+  order: number;
+  updatedAt?: string | null;
+  lessons: CourseModuleLesson[];
+}
+
+export type CourseOverviewDetail = {
+  course: {
+    id: number;
+    title: string;
+    description?: string | null;
+    thumbnail?: string | null;
+    price: number;
+    difficulty?: string | null;
+    duration?: number | null;
+    moduleCount?: number | null;
+    category?: string | null;
+    viewCount?: number | null;
+    purchaseCount?: number | null;
+    rating?: number | null;
+    updatedAt?: string | null;
+  };
+  modules: CourseModule[];
+}
+
+type CoursesOverviewResponse = {
+  success: boolean;
+  data: {
+    courses: CourseOverview[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  };
+}
+
+type CourseQueryParams = {
+  search?: string;
+  sortBy?: 'price' | 'newest' | 'rating' | 'popular';
+  page?: number;
+  limit?: number;
+}
+
+export async function fetchCourses(params?: CourseQueryParams): Promise<{
+  courses: CourseOverview[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> {
+  const queryParams = new URLSearchParams()
+  if (params?.search) queryParams.append('search', params.search)
+  if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+  if (params?.page) queryParams.append('page', params.page.toString())
+  if (params?.limit) queryParams.append('limit', params.limit.toString())
+
+  const queryString = queryParams.toString()
+  const path = `/courses${queryString ? `?${queryString}` : ''}`
+
+  const res = await apiGet<CoursesOverviewResponse>(path)
+
+  return {
+    courses: res.data.courses,
+    pagination: res.data.pagination
+  }
+}
+
+type CourseOverviewDetailResponse = {
+  success: boolean;
+  data: CourseOverviewDetail;
+}
+
+export async function fetchCourseOverviewDetail(id: number): Promise<CourseOverviewDetail> {
+  const res = await apiGet<CourseOverviewDetailResponse>(`/courses/${id}`)
+  return res.data
+}
 
 // Helper function to extract YouTube video ID from URL
 function extractYouTubeVideoId(videoUrl?: string | null): string {
   if (!videoUrl) return ''
-  
-  // Handle different YouTube URL formats
+
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
     /youtube\.com\/.*[?&]v=([^&\n?#]+)/
   ]
-  
+
   for (const pattern of patterns) {
     const match = videoUrl.match(pattern)
     if (match && match[1]) {
       return match[1]
     }
   }
-  
-  // If no match, assume it's already a video ID
+
   return videoUrl
 }
 
@@ -26,15 +129,14 @@ function extractYouTubeVideoId(videoUrl?: string | null): string {
 function transformRecipe(apiRecipe: any): Recipe {
   const videoUrl = apiRecipe.videoUrl || apiRecipe.youtubeVideoId || ''
   const youtubeVideoId = extractYouTubeVideoId(videoUrl)
-  
+
   return {
     ...apiRecipe,
     youtubeVideoId,
-    isForSale: apiRecipe.price > 0, // Determine isForSale from price
-    // Ensure difficulty is capitalized for display
-    difficulty: apiRecipe.difficulty ? 
-      apiRecipe.difficulty.charAt(0).toUpperCase() + apiRecipe.difficulty.slice(1) : 
-      apiRecipe.difficulty
+    isForSale: apiRecipe.price > 0,
+    difficulty: apiRecipe.difficulty
+      ? apiRecipe.difficulty.charAt(0).toUpperCase() + apiRecipe.difficulty.slice(1)
+      : apiRecipe.difficulty
   }
 }
 
@@ -80,7 +182,6 @@ export async function fetchRecipes(
   };
 }> {
   const requireAuth = options?.requireAuth ?? false
-  // Build query string
   const queryParams = new URLSearchParams()
   if (params?.search) queryParams.append('search', params.search)
   if (params?.difficulty) queryParams.append('difficulty', params.difficulty)
@@ -91,12 +192,10 @@ export async function fetchRecipes(
 
   const queryString = queryParams.toString()
   const path = `/recipes${queryString ? `?${queryString}` : ''}`
-  
+
   const res = await apiGet<RecipesOverviewResponse>(path, requireAuth)
-  
-  // Transform recipes to add isForSale and youtubeVideoId
   const transformedRecipes = res.data.recipes.map(transformRecipe)
-  
+
   return {
     recipes: transformedRecipes,
     pagination: res.data.pagination
@@ -106,8 +205,7 @@ export async function fetchRecipes(
 export async function fetchRecipeById(id: number, requireAuth = false): Promise<Recipe | null> {
   const res = await apiGet<RecipeDetailResponse>(`/recipes/${id}`, requireAuth)
   if (!res.data) return null
-  
-  // Transform recipe to add isForSale and youtubeVideoId
+
   return transformRecipe(res.data)
 }
 
@@ -166,7 +264,6 @@ export async function fetchMyRecipes(params?: RecipeQueryParams): Promise<{
     totalPages: number;
   };
 }> {
-  // Build query string
   const queryParams = new URLSearchParams()
   if (params?.search) queryParams.append('search', params.search)
   if (params?.difficulty) queryParams.append('difficulty', params.difficulty)
@@ -177,12 +274,10 @@ export async function fetchMyRecipes(params?: RecipeQueryParams): Promise<{
 
   const queryString = queryParams.toString()
   const path = `/recipes/my-recipes${queryString ? `?${queryString}` : ''}`
-  
+
   const res = await apiGet<RecipesOverviewResponse>(path, true)
-  
-  // Transform recipes to add isForSale and youtubeVideoId
   const transformedRecipes = res.data.recipes.map(transformRecipe)
-  
+
   return {
     recipes: transformedRecipes,
     pagination: res.data.pagination

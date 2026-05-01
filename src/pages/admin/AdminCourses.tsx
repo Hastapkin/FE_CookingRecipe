@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import type { Recipe } from '../../types/recipe'
-import { fetchRecipes } from '../../services/recipes'
+  import type { Recipe } from '../../types/course'
+  import { fetchRecipes } from '../../services/courses'
 
 function AdminRecipes() {
   const navigate = useNavigate()

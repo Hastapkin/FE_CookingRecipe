@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { createRecipe, fetchRecipeById, updateRecipe } from '../../services/recipes'
-import type { Recipe } from '../../types/recipe'
+import { createRecipe, fetchRecipeById, updateRecipe } from '../../services/courses'
+import type { Recipe } from '../../types/course'
 
 function sanitizeRecipeForEditing(recipe: Recipe): Record<string, unknown> {
   const {

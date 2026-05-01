@@ -9,7 +9,7 @@ function CheckoutSuccess() {
     // Show notification for 3 seconds, then redirect
     const timer = setTimeout(() => {
       setShowNotification(false)
-      navigate('/recipes')
+      navigate('/courses')
     }, 3000)
 
     return () => clearTimeout(timer)
@@ -33,7 +33,7 @@ function CheckoutSuccess() {
           className="notification-close"
           onClick={() => {
             setShowNotification(false)
-            navigate('/recipes')
+            navigate('/courses')
           }}
         >
           <i className="fas fa-times"></i>

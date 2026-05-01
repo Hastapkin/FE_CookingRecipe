@@ -1,20 +1,24 @@
-export interface Recipe {
+export interface Course {
   id: number;
   title: string;
   description?: string;
-  youtubeVideoId: string;
-  videoUrl?: string | null;
-  videoThumbnail?: string | null;
+  thumbnail?: string | null;
   price: number;
-  isForSale: boolean;
   difficulty: string;
-  cookingTime: number;
-  servings: number;
-  category: string;
+  duration?: number | null;
+  moduleCount?: number;
+  lessonCount?: number;
   rating: number;
   totalRatings: number;
-  viewCount: number;
-  purchaseCount: number;
+  youtubeVideoId?: string;
+  videoUrl?: string | null;
+  videoThumbnail?: string | null;
+  isForSale?: boolean;
+  cookingTime?: number;
+  servings?: number;
+  category?: string;
+  viewCount?: number;
+  purchaseCount?: number;
   createdBy?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -35,3 +39,4 @@ export interface Recipe {
   }>;
 }
 
+export type Recipe = Course;

@@ -6,8 +6,8 @@ import { isAuthenticated, getUserSession } from '../services/auth'
 import YouTubePlayer from '../components/YouTubePlayer'
 import VideoPreview from '../components/VideoPreview'
 import PriceButton from '../components/PriceButton'
-import { fetchRecipes } from '../services/recipes'
-import type { Recipe } from '../types/recipe'
+import { fetchRecipes } from '../services/courses'
+import type { Recipe } from '../types/course'
 
 function Home() {
   const navigate = useNavigate()
@@ -146,9 +146,9 @@ function Home() {
             <h1 className="hero-title">Learn from <span className="gradient-text">Master</span></h1>
             <p className="hero-subtitle">Learn from professional chefs !</p>
             <div className="hero-buttons">
-              <Link to="/recipes" className="btn btn-primary">
+              <Link to="/courses" className="btn btn-primary">
                 <i className="fas fa-play"></i>
-                Browse Video Recipes
+                Browse Courses
               </Link>
             </div>
             <div className="hero-stats">

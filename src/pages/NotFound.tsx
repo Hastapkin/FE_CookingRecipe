@@ -22,18 +22,18 @@ function NotFound() {
               <i className="fas fa-home"></i>
               Go Home
             </Link>
-            <Link to="/recipes" className="btn btn-outline btn-large">
+            <Link to="/courses" className="btn btn-outline btn-large">
               <i className="fas fa-book-open"></i>
-              Browse Recipes
+              Browse Courses
             </Link>
           </div>
           
           <div className="not-found-suggestions">
             <h3>You might be interested in:</h3>
             <div className="suggestion-links">
-              <Link to="/recipes" className="suggestion-link">
+              <Link to="/courses" className="suggestion-link">
                 <i className="fas fa-utensils"></i>
-                <span>Explore Recipes</span>
+                <span>Explore Courses</span>
               </Link>
               <Link to="/about" className="suggestion-link">
                 <i className="fas fa-info-circle"></i>

@@ -110,9 +110,9 @@ function Cart() {
             <p>Add some video recipes to get started!</p>
             <button 
               className="btn btn-primary"
-              onClick={() => navigate('/recipes')}
+              onClick={() => navigate('/courses')}
             >
-              Browse Recipes
+              Browse Courses
             </button>
           </div>
         </div>

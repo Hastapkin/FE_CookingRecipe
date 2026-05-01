@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import type { Recipe } from '../../types/recipe'
-import { deleteRecipe, fetchRecipeById, uploadRecipeThumbnail } from '../../services/recipes'
+import type { Recipe } from '../../types/course'
+import { deleteRecipe, fetchRecipeById, uploadRecipeThumbnail } from '../../services/courses'
 import YouTubePlayer from '../../components/YouTubePlayer'
 
 function AdminRecipeDetail() {

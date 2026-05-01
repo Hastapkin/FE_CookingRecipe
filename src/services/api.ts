@@ -1,6 +1,6 @@
 import { getStoredToken } from '../config/session'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://recipe-api-t5t0.onrender.com/api'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api'
 
 // Get authentication token from localStorage
 function getAuthToken(): string | null {

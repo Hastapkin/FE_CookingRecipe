@@ -2,8 +2,8 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import VideoPreview from '../components/VideoPreview'
-import type { Recipe } from '../types/recipe'
-import { fetchMyRecipes } from '../services/recipes'
+import type { Recipe } from '../types/course'
+import { fetchMyRecipes } from '../services/courses'
 import { isAuthenticated } from '../services/auth'
 
 function MyRecipes() {
@@ -202,8 +202,8 @@ function MyRecipes() {
                     }
                   </p>
                   {!(filters.search || filters.difficulty || filters.time) && (
-                    <Link to="/recipes" className="btn btn-primary">
-                      Browse Recipes
+                    <Link to="/courses" className="btn btn-primary">
+                      Browse Courses
                     </Link>
                   )}
                 </div>

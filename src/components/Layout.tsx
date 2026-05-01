@@ -199,12 +199,12 @@ function Layout() {
                   </li>
                   <li className="nav-item">
                     <NavLink 
-                      to="/recipes" 
+                      to="/courses" 
                       className={({isActive}) => 'nav-link' + (isActive ? ' active' : '')}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <i className="fas fa-book-open"></i>
-                      <span>Recipes</span>
+                      <span>Courses</span>
                     </NavLink>
                   </li>
                   <li className="nav-item">
