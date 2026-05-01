@@ -151,7 +151,7 @@ function Cart() {
                       <span className="item-category">{item.lessonCount != null ? `${item.lessonCount} lessons` : 'Course'}</span>
                       <span className="item-difficulty">{item.difficulty || '—'}</span>
                       <span className="item-time">
-                        <i className="fas fa-clock"></i> {item.estimatedDurationMinutes ?? item.cookingTime ?? 0} min
+                        <i className="fas fa-clock"></i> {item.estimatedDurationMinutes ?? item.cookingTime ?? 0} mins
                       </span>
                     </div>
                   </div>

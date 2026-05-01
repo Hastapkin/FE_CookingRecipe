@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from './api'
+import { apiGet, apiPost, apiPut } from './api'
 import {
   APP_EVENTS,
   clearStoredSession,
@@ -10,6 +10,8 @@ import {
 export interface User {
   id: number
   username: string
+  name?: string | null
+  email?: string | null
   profilePicture?: string | null
   role: string
   createdAt?: string
@@ -40,12 +42,35 @@ export async function login(username: string, password: string): Promise<LoginRe
 }
 
 export async function register(username: string, password: string): Promise<RegisterResponse> {
-  const response = await apiPost<RegisterResponse>('/auth/register', { username, password }, false)
+  const response = await apiPost<RegisterResponse>(
+    '/auth/register',
+    { name: username, email: `${username}@example.com`, username, password },
+    false
+  )
+  return response
+}
+
+export async function registerWithProfile(
+  name: string,
+  email: string,
+  username: string,
+  password: string
+): Promise<RegisterResponse> {
+  const response = await apiPost<RegisterResponse>('/auth/register', { name, email, username, password }, false)
   return response
 }
 
 export async function getProfile(): Promise<User> {
   const response = await apiGet<ProfileResponse>('/auth/profile', true)
+  return response.user
+}
+
+export async function updateProfile(name: string, email: string): Promise<User> {
+  const response = await apiPut<{ success: boolean; user: User; message?: string }>(
+    '/auth/profile',
+    { name, email },
+    true
+  )
   return response.user
 }
 
@@ -78,6 +103,8 @@ export function getUserSession(): { user: User; token: string } | null {
     token?: string
     id?: number
     username?: string
+    name?: string | null
+    email?: string | null
     profilePicture?: string | null
     role?: string
     createdAt?: string
@@ -96,6 +123,8 @@ export function getUserSession(): { user: User; token: string } | null {
     user: {
       id: rawUser.id,
       username: rawUser.username,
+      name: rawUser.name,
+      email: rawUser.email,
       profilePicture: rawUser.profilePicture,
       role: rawUser.role,
       createdAt: rawUser.createdAt

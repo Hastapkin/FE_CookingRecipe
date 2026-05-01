@@ -186,6 +186,11 @@ function CourseDetail() {
     return `${hours}h ${minutes}m`
   }
 
+  const formatLabel = (value?: string | null) => {
+    if (!value) return ''
+    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
+  }
+
   const formatPrice = (price?: number | null) => {
     if (price === null || price === undefined) return 'N/A'
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price)
@@ -248,7 +253,7 @@ function CourseDetail() {
               </span>
               {course.difficulty && (
                 <span className="course-hero-pill">
-                  <i className="fas fa-signal"></i> {course.difficulty}
+                  <i className="fas fa-signal"></i> {formatLabel(course.difficulty)}
                 </span>
               )}
               {course.category && (
@@ -355,16 +360,15 @@ function CourseDetail() {
                           {module.lessons.map((lesson) => (
                             <div className="lesson-item" key={lesson.id}>
                               <h4>{lesson.title}</h4>
-                              <p>{lesson.description || 'No lesson description.'}</p>
                               <div className="lesson-meta">
                                 {lesson.contentType && (
                                   <span>
-                                    <i className="fas fa-tag"></i> {lesson.contentType}
+                                    <i className="fas fa-tag"></i> {formatLabel(lesson.contentType)}
                                   </span>
                                 )}
-                                {lesson.durationMinutes && (
+                                {lesson.durationMinutes !== null && lesson.durationMinutes !== undefined && (
                                   <span>
-                                    <i className="fas fa-clock"></i> {lesson.durationMinutes} min
+                                    <i className="fas fa-clock"></i> {lesson.durationMinutes} mins
                                   </span>
                                 )}
                                 <span>

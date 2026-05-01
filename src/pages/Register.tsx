@@ -1,10 +1,12 @@
 // React import not required with react-jsx runtime
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { register, saveUserSession } from '../services/auth'
+import { registerWithProfile, saveUserSession } from '../services/auth'
 
 function Register() {
   const navigate = useNavigate()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -28,7 +30,7 @@ function Register() {
     setStatus('loading')
     
     try {
-      const response = await register(username, password)
+      const response = await registerWithProfile(name, email, username, password)
       if (response.success && response.token) {
         setStatus('success')
         saveUserSession(response.user, response.token)
@@ -48,6 +50,10 @@ function Register() {
   return (
     <main>
       <section className="page-header">
+        <div className="container">
+          <h1 className="page-title">Register</h1>
+          <p className="page-subtitle">Create your account to start learning courses</p>
+        </div>
       </section>
 
       <section className="contact-content">
@@ -56,6 +62,14 @@ function Register() {
             <div className="section-tag center">Join us</div>
             <h2 style={{textAlign: 'center'}}>Create an account</h2>
             <form onSubmit={handleSubmit} className="contact-form" style={{marginTop: '1rem'}}>
+              <div className="form-group">
+                <label htmlFor="name">Full Name</label>
+                <input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              </div>
               <div className="form-group">
                 <label htmlFor="username">Username</label>
                 <input id="username" type="text" value={username} onChange={e => setUsername(e.target.value)} required />

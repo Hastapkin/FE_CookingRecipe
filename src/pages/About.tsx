@@ -4,6 +4,10 @@ function About() {
   return (
     <main>
       <section className="page-header">
+        <div className="container">
+          <h1 className="page-title">About</h1>
+          <p className="page-subtitle">Learn more about our mission and story</p>
+        </div>
       </section>
 
       <section className="about-content">

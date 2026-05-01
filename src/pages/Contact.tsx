@@ -156,6 +156,10 @@ function Contact() {
   return (
     <main>
       <section className="page-header">
+        <div className="container">
+          <h1 className="page-title">Contact</h1>
+          <p className="page-subtitle">Reach out and we will respond as soon as possible</p>
+        </div>
       </section>
 
       <section className="contact-content">

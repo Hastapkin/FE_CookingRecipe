@@ -266,6 +266,38 @@ export async function fetchCourseLearningDetail(id: number): Promise<CourseLearn
   return res.data
 }
 
+export async function downloadCourseCertificate(id: number): Promise<void> {
+  const session = getUserSession()
+  if (!session?.token) {
+    throw new Error('Authentication required')
+  }
+
+  const base = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api'
+  const res = await fetch(`${base}/courses/${id}/certificate`, {
+    headers: {
+      Authorization: `Bearer ${session.token}`
+    }
+  })
+
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => '')
+    throw new Error(`Download certificate failed: ${res.status} ${errorText}`)
+  }
+
+  const blob = await res.blob()
+  const contentDisposition = res.headers.get('content-disposition') || ''
+  const nameMatch = contentDisposition.match(/filename="([^"]+)"/i)
+  const fileName = nameMatch?.[1] || `course_certificate_${id}.pdf`
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 export async function updateLessonProgress(courseId: number, lessonId: number, isCompleted: boolean): Promise<CourseLearningDetail> {
   const res = await apiPut<CourseLearningDetailResponse>(`/courses/${courseId}/lessons/${lessonId}/progress`, { isCompleted }, true)
   return res.data

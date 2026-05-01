@@ -91,8 +91,8 @@ function AdminCourseDetail() {
       <main className="admin-page">
         <section className="page-header">
           <div className="container">
-            <h1 className="page-title">Course Detail</h1>
-            <p className="page-subtitle">Manage course information</p>
+          <h1 className="page-title">Manage Course Detail</h1>
+          <p className="page-subtitle">View and manage course information</p>
           </div>
         </section>
         <section className="section">
@@ -116,8 +116,8 @@ function AdminCourseDetail() {
     <main className="admin-page">
       <section className="page-header">
         <div className="container">
-          <h1 className="page-title">{course.title}</h1>
-          <p className="page-subtitle">Manage course content and assets</p>
+          <h1 className="page-title">Manage Course Detail</h1>
+          <p className="page-subtitle">{course.title} - manage course content and assets</p>
           <div className="page-actions">
             <button
               className="btn btn-primary"
@@ -205,7 +205,7 @@ function AdminCourseDetail() {
                 </div>
                 <div>
                   <h4>Duration</h4>
-                  <p>{course.duration ? `${course.duration} min` : '—'}</p>
+                  <p>{course.duration !== null && course.duration !== undefined ? `${course.duration} mins` : '—'}</p>
                 </div>
                 <div>
                   <h4>Modules</h4>

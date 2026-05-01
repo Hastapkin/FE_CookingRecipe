@@ -288,15 +288,15 @@ function Layout() {
                           <span className="dropdown-username">{currentUser.username}</span>
                         </div>
                         <NavLink 
-                          to="/profile-picture" 
+                          to="/profile" 
                           className="dropdown-item"
                           onClick={() => {
                             setUserDropdownOpen(false)
                             setMobileMenuOpen(false)
                           }}
                         >
-                          <i className="fas fa-camera"></i>
-                          <span>Change Profile Picture</span>
+                          <i className="fas fa-user-cog"></i>
+                          <span>Profile Settings</span>
                         </NavLink>
                         <button
                           className="dropdown-item dropdown-item-danger"
@@ -399,15 +399,15 @@ function Layout() {
                             <span>My Courses</span>
                           </NavLink>
                           <NavLink 
-                            to="/profile-picture" 
+                            to="/profile" 
                             className="dropdown-item"
                             onClick={() => {
                               setUserDropdownOpen(false)
                               setMobileMenuOpen(false)
                             }}
                           >
-                            <i className="fas fa-camera"></i>
-                            <span>Change Profile Picture</span>
+                            <i className="fas fa-user-cog"></i>
+                            <span>Profile Settings</span>
                           </NavLink>
                           <button
                             className="dropdown-item dropdown-item-danger"

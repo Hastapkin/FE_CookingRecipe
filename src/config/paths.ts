@@ -8,7 +8,7 @@ export const ROUTES = {
   CHECKOUT_SUCCESS: '/checkout/success',
   MY_ORDERS: '/my-orders',
   MY_COURSES: '/my-courses',
-  PROFILE_PICTURE: '/profile-picture',
+  PROFILE: '/profile',
   ABOUT: '/about',
   CONTACT: '/contact',
   LOGIN: '/login',

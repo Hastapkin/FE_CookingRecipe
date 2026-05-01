@@ -10,7 +10,7 @@ import Login from './pages/Login'
 import MyOrders from './pages/MyOrders'
 import MyCourses from './pages/MyCourses'
 import NotFound from './pages/NotFound'
-import ProfilePicture from './pages/ProfilePicture'
+import ProfileSettings from './pages/ProfileSettings'
 import CourseDetail from './pages/CourseDetail'
 import CourseLearn from './pages/CourseLearn'
 import Courses from './pages/Courses'
@@ -37,7 +37,7 @@ function AppRoutes() {
         <Route path={ROUTES.CHECKOUT_SUCCESS} element={<AuthMiddleware><CheckoutSuccess /></AuthMiddleware>} />
         <Route path={ROUTES.MY_ORDERS} element={<AuthMiddleware><MyOrders /></AuthMiddleware>} />
         <Route path={ROUTES.MY_COURSES} element={<AuthMiddleware><MyCourses /></AuthMiddleware>} />
-        <Route path={ROUTES.PROFILE_PICTURE} element={<AuthMiddleware><ProfilePicture /></AuthMiddleware>} />
+        <Route path={ROUTES.PROFILE} element={<AuthMiddleware><ProfileSettings /></AuthMiddleware>} />
 
         <Route path={ROUTES.ADMIN_COURSES} element={<AdminMiddleware><AdminCourses /></AdminMiddleware>} />
         <Route path={ROUTES.ADMIN_COURSE_NEW} element={<AdminMiddleware><AdminCourseEditor /></AdminMiddleware>} />

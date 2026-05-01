@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
+  downloadCourseCertificate,
   fetchCourseLearningDetail,
   submitAssignment,
   updateLessonProgress,
@@ -16,7 +17,13 @@ function CourseLearn() {
   const [assignmentFeedback, setAssignmentFeedback] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  const [downloadingCertificate, setDownloadingCertificate] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string>('')
+
+  const formatLabel = (value?: string | null) => {
+    if (!value) return ''
+    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
+  }
 
   useEffect(() => {
     if (!id) return
@@ -100,6 +107,19 @@ function CourseLearn() {
     }
   }
 
+  const handleDownloadCertificate = async () => {
+    if (!detail) return
+    setDownloadingCertificate(true)
+    try {
+      await downloadCourseCertificate(detail.course.id)
+    } catch (error) {
+      console.error('Failed to download certificate', error)
+      window.alert(error instanceof Error ? error.message : 'Failed to download certificate')
+    } finally {
+      setDownloadingCertificate(false)
+    }
+  }
+
   if (loading) {
     return (
       <main>
@@ -123,6 +143,8 @@ function CourseLearn() {
       </main>
     )
   }
+
+  const isCourseCompleted = detail.progress.percent > 95
 
   return (
     <main className="course-learn-page">
@@ -155,13 +177,24 @@ function CourseLearn() {
                         <i className={`fas ${lesson.isCompleted ? 'fa-circle-check' : 'fa-circle'}`}></i>
                         {lesson.title}
                       </span>
-                      <small>{lesson.contentType}</small>
+                      <small>{formatLabel(lesson.contentType)}</small>
                     </button>
                   ))}
                 </div>
               </div>
             ))}
           </div>
+
+          {isCourseCompleted && (
+            <div className="course-certificate-panel">
+              <p className="course-certificate-text">
+                Congratulations! You have completed this course. Your certificate is ready.
+              </p>
+              <button className="btn btn-primary btn-small" onClick={handleDownloadCertificate} disabled={downloadingCertificate}>
+                {downloadingCertificate ? 'Preparing...' : 'Download Certificate'}
+              </button>
+            </div>
+          )}
         </aside>
 
         <section className="course-learn-content">

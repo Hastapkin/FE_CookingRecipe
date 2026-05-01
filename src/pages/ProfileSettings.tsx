@@ -1,14 +1,23 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { isAuthenticated, getProfile, uploadProfilePicture } from '../services/auth'
-import { useEffect } from 'react'
+import {
+  isAuthenticated,
+  getProfile,
+  uploadProfilePicture,
+  updateProfile,
+  getUserSession,
+  saveUserSession
+} from '../services/auth'
 
-function ProfilePicture() {
+function ProfileSettings() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [savingProfile, setSavingProfile] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [currentProfilePicture, setCurrentProfilePicture] = useState<string | null>(null)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -17,10 +26,11 @@ function ProfilePicture() {
       return
     }
 
-    // Load current profile picture
     const loadProfile = async () => {
       try {
         const profile = await getProfile()
+        setName(profile.name || '')
+        setEmail(profile.email || '')
         setCurrentProfilePicture(profile.profilePicture || null)
       } catch (error) {
         console.error('Failed to load profile:', error)
@@ -34,13 +44,11 @@ function ProfilePicture() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file')
       return
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert('Image size must be less than 5MB')
       return
@@ -48,7 +56,6 @@ function ProfilePicture() {
 
     setSelectedFile(file)
 
-    // Create preview
     const reader = new FileReader()
     reader.onloadend = () => {
       setPreviewUrl(reader.result as string)
@@ -65,25 +72,20 @@ function ProfilePicture() {
     try {
       setLoading(true)
       const response = await uploadProfilePicture(selectedFile)
-      
+
       if (response.success) {
-        // Update current profile picture
         setCurrentProfilePicture(response.data.imageUrl)
         setPreviewUrl(null)
         setSelectedFile(null)
-        
-        // Update session
-        const { getUserSession, saveUserSession } = await import('../services/auth')
+
         const session = getUserSession()
         if (session) {
           const updatedUser = { ...session.user, profilePicture: response.data.imageUrl }
           saveUserSession(updatedUser, session.token)
-          // Trigger event to update Layout component
           window.dispatchEvent(new Event('authStateChanged'))
         }
-        
+
         alert('Profile picture updated successfully!')
-        // Optionally navigate back or reload profile
       }
     } catch (error) {
       console.error('Failed to upload profile picture:', error)
@@ -101,18 +103,83 @@ function ProfilePicture() {
     }
   }
 
+  const handleSaveProfile = async () => {
+    if (!name.trim() || !email.trim()) {
+      alert('Name and email are required.')
+      return
+    }
+
+    try {
+      setSavingProfile(true)
+      const updated = await updateProfile(name.trim(), email.trim())
+      const session = getUserSession()
+      if (session) {
+        saveUserSession({ ...session.user, ...updated }, session.token)
+      }
+      alert('Profile updated successfully!')
+    } catch (error) {
+      console.error('Failed to update profile:', error)
+      alert(error instanceof Error ? error.message : 'Failed to update profile. Please try again.')
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
   return (
     <main>
       <section className="page-header">
         <div className="container">
-          <h1>Change Profile Picture</h1>
-          <p>Upload a new profile picture to personalize your account</p>
+          <h1 className="page-title">Profile Settings</h1>
+          <p className="page-subtitle">Update your name, email, and profile picture</p>
         </div>
       </section>
 
       <section className="profile-picture-section">
         <div className="container">
           <div className="profile-picture-container">
+            <div className="upload-section">
+              <h3>Profile Details</h3>
+              <div className="form-group">
+                <label htmlFor="profileName">Full Name</label>
+                <input
+                  id="profileName"
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Your full name"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="profileEmail">Email</label>
+                <input
+                  id="profileEmail"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="your@email.com"
+                />
+              </div>
+              <div className="form-actions">
+                <button
+                  className="btn btn-primary"
+                  onClick={handleSaveProfile}
+                  disabled={savingProfile}
+                >
+                  {savingProfile ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin"></i>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-save"></i>
+                      Save Profile
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
             <div className="current-picture-section">
               <h3>Current Profile Picture</h3>
               {currentProfilePicture ? (
@@ -128,7 +195,7 @@ function ProfilePicture() {
             </div>
 
             <div className="upload-section">
-              <h3>Upload New Picture</h3>
+              <h3>Profile Picture</h3>
               <div className="form-group">
                 <label htmlFor="profilePicture" className="file-upload-label">
                   <input
@@ -187,7 +254,7 @@ function ProfilePicture() {
                 <button
                   className="btn btn-outline"
                   onClick={() => navigate(-1)}
-                  disabled={loading}
+                  disabled={loading || savingProfile}
                 >
                   <i className="fas fa-arrow-left"></i>
                   Cancel
@@ -201,5 +268,4 @@ function ProfilePicture() {
   )
 }
 
-export default ProfilePicture
-
+export default ProfileSettings

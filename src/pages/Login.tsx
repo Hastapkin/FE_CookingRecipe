@@ -34,6 +34,10 @@ function Login() {
   return (
     <main>
       <section className="page-header">
+        <div className="container">
+          <h1 className="page-title">Login</h1>
+          <p className="page-subtitle">Sign in to continue your learning journey</p>
+        </div>
       </section>
 
       <section className="contact-content">
