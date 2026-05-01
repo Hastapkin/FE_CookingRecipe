@@ -7,7 +7,6 @@ export interface Transaction {
   paymentMethod?: string | null
   paymentProof?: string | null
   status: 'pending' | 'verified' | 'rejected'
-  adminNotes?: string | null
   createdAt: string
   verifiedAt?: string | null
   verifiedBy?: number | null
@@ -131,30 +130,22 @@ export interface RejectTransactionResponse {
   data: {
     transactionId: number
     status: string
-    adminNotes: string
   }
 }
 
-export async function verifyTransaction(
-  transactionId: number,
-  adminNotes?: string
-): Promise<VerifyTransactionResponse> {
-  const body = adminNotes ? { adminNotes } : {}
+export async function verifyTransaction(transactionId: number): Promise<VerifyTransactionResponse> {
   const response = await apiPut<VerifyTransactionResponse>(
     `/transactions/${transactionId}/verify`,
-    body,
+    {},
     true
   )
   return response
 }
 
-export async function rejectTransaction(
-  transactionId: number,
-  adminNotes: string
-): Promise<RejectTransactionResponse> {
+export async function rejectTransaction(transactionId: number): Promise<RejectTransactionResponse> {
   const response = await apiPut<RejectTransactionResponse>(
     `/transactions/${transactionId}/reject`,
-    { adminNotes },
+    {},
     true
   )
   return response

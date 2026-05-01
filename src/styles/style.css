@@ -1241,6 +1241,8 @@ section {
     justify-content: space-between;
     align-items: center;
   gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-sm);
 }
 
 .recipe-stats {
@@ -1407,6 +1409,17 @@ section {
   color: var(--accent-warm);
 }
 
+.course-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.95);
+}
+
 .course-hero-description {
   font-size: var(--text-base);
   color: rgba(255, 255, 255, 0.9);
@@ -1414,6 +1427,15 @@ section {
 
 .course-hero-price .current-price {
   color: var(--text-inverse);
+}
+
+.course-hero-rating {
+  align-items: center;
+}
+
+.course-hero-rating .rating-text {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
 }
 
 /* Course overview modules */
@@ -1429,6 +1451,22 @@ section {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
+}
+
+.review-disabled {
+  opacity: 0.75;
+}
+
+.review-section-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  text-align: left;
+}
+
+.review-textarea {
+  padding: 0.75rem 0.85rem;
+  line-height: 1.4;
 }
 
 .module-toggle {
@@ -3120,12 +3158,13 @@ section {
 }
 
 .order-item {
-    display: flex;
+  display: flex;
+  justify-content: space-between;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
-    align-items: center;
+  align-items: center;
 }
 
 .order-actions {

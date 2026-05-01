@@ -1,49 +1,48 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-  import type { Recipe } from '../../types/course'
-  import { fetchRecipes } from '../../services/courses'
+import type { CourseOverview } from '../../services/courses'
+import { fetchCourses } from '../../services/courses'
 
-function AdminRecipes() {
+function AdminCourses() {
   const navigate = useNavigate()
-  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [courses, setCourses] = useState<CourseOverview[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
 
   useEffect(() => {
-    const loadRecipes = async () => {
+    const loadCourses = async () => {
       try {
         setLoading(true)
         setError(null)
-        const response = await fetchRecipes({ limit: 100 }, { requireAuth: true })
-        setRecipes(response.recipes)
+        const response = await fetchCourses({ limit: 200, sortBy: 'newest' })
+        setCourses(response.courses)
       } catch (err) {
-        console.error('Failed to load recipes', err)
-        setError('Failed to load recipes. Please try again later.')
+        console.error('Failed to load courses', err)
+        setError('Failed to load courses. Please try again later.')
       } finally {
         setLoading(false)
       }
     }
 
-    loadRecipes()
+    loadCourses()
   }, [navigate])
 
-  const filteredRecipes = useMemo<Recipe[]>(() => {
-    if (!search.trim()) return recipes
+  const filteredCourses = useMemo<CourseOverview[]>(() => {
+    if (!search.trim()) return courses
     const term = search.toLowerCase()
-    return recipes.filter((recipe) =>
-      recipe.title.toLowerCase().includes(term) ||
-      (recipe.category || '').toLowerCase().includes(term) ||
-      (recipe.description || '').toLowerCase().includes(term)
+    return courses.filter((course) =>
+      course.title.toLowerCase().includes(term) ||
+      (course.description || '').toLowerCase().includes(term)
     )
-  }, [recipes, search])
+  }, [courses, search])
 
   return (
     <main className="admin-page">
       <section className="page-header">
         <div className="container">
-          <h1 className="page-title">Manage Recipes</h1>
-          <p className="page-subtitle">View and maintain all recipes in the system</p>
+          <h1 className="page-title">Manage Courses</h1>
+          <p className="page-subtitle">View and maintain all courses in the system</p>
         </div>
       </section>
 
@@ -53,60 +52,60 @@ function AdminRecipes() {
             <input
               type="search"
               className="form-control"
-              placeholder="Search by title, category, or description"
+              placeholder="Search by course title or description"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
             <button
               className="btn btn-primary"
-              onClick={() => navigate('/admin/recipes/new')}
+              onClick={() => navigate('/admin/courses/new')}
             >
               <i className="fas fa-plus-circle"></i>
-              Add Recipe
+              Add Course
             </button>
           </div>
 
           {loading ? (
             <div className="loading-container">
               <div className="loading-spinner large"></div>
-              <p>Loading recipes...</p>
+              <p>Loading courses...</p>
             </div>
           ) : error ? (
             <div className="error-message">
               <i className="fas fa-exclamation-triangle"></i>
               <p>{error}</p>
             </div>
-          ) : filteredRecipes.length === 0 ? (
+          ) : filteredCourses.length === 0 ? (
             <div className="empty-state">
-              <i className="fas fa-utensils"></i>
-              <h3>No recipes found</h3>
-              <p>Try adjusting your search term or add a new recipe.</p>
+              <i className="fas fa-book-open"></i>
+              <h3>No courses found</h3>
+              <p>Try adjusting your search term or add a new course.</p>
               <button
                 className="btn btn-primary"
-                onClick={() => navigate('/admin/recipes/new')}
+                onClick={() => navigate('/admin/courses/new')}
               >
-                Add Recipe
+                Add Course
               </button>
             </div>
           ) : (
             <div className="admin-recipes-table">
               <div className="table-header">
                 <span>Title</span>
-                <span>Category</span>
+                <span>Modules</span>
                 <span>Difficulty</span>
                 <span>Price</span>
                 <span>Actions</span>
               </div>
-              {filteredRecipes.map((recipe) => (
-                <div key={recipe.id} className="table-row">
-                  <span>{recipe.title}</span>
-                  <span>{recipe.category || '—'}</span>
-                  <span>{recipe.difficulty || '—'}</span>
-                  <span>${recipe.price?.toFixed(2) ?? '0.00'}</span>
+              {filteredCourses.map((course) => (
+                <div key={course.id} className="table-row">
+                  <span>{course.title}</span>
+                  <span>{course.moduleCount || 0}</span>
+                  <span>{course.difficulty || '—'}</span>
+                  <span>${course.price?.toFixed(2) ?? '0.00'}</span>
                   <span>
                     <button
                       className="btn btn-outline btn-small"
-                      onClick={() => navigate(`/admin/recipes/${recipe.id}`)}
+                      onClick={() => navigate(`/admin/courses/${course.id}`)}
                     >
                       <i className="fas fa-eye"></i> View
                     </button>
@@ -121,4 +120,4 @@ function AdminRecipes() {
   )
 }
 
-export default AdminRecipes
+export default AdminCourses

@@ -1,173 +1,249 @@
-import { apiGet, apiPost, apiPut, apiDelete, apiPostFormData } from './api'
-import type { Recipe } from '../types/course'
+import { apiDelete, apiGet, apiPost, apiPostFormData, apiPut } from './api'
+import { getUserSession } from './auth'
 
 export type CourseOverview = {
-  id: number;
-  title: string;
-  description?: string;
-  thumbnail?: string | null;
-  price: number;
-  difficulty: string;
-  duration?: number | null;
-  moduleCount: number;
-  rating: number;
+  id: number
+  title: string
+  description?: string
+  thumbnail?: string | null
+  price: number
+  difficulty: string
+  duration?: number | null
+  createdAt?: string | null
+  moduleCount: number
+  rating: number
+}
+
+export type AssignmentQuestion = {
+  question: string
+  options: string[]
+  correct: number
 }
 
 export type CourseModuleLesson = {
-  id: number;
-  title: string;
-  description?: string | null;
-  contentType?: string | null;
-  durationMinutes?: number | null;
-  updatedAt?: string | null;
+  id: number
+  title: string
+  description?: string | null
+  order: number
+  contentType?: string | null
+  durationMinutes?: number | null
+  updatedAt?: string | null
+  content?: {
+    articleText?: string | null
+    videoUrl?: string | null
+    videoDuration?: number | null
+    assignmentQuestions?: AssignmentQuestion[]
+    passingScore?: number
+  }
 }
 
 export type CourseModule = {
-  id: number;
-  title: string;
-  description?: string | null;
-  order: number;
-  updatedAt?: string | null;
-  lessons: CourseModuleLesson[];
+  id: number
+  title: string
+  description?: string | null
+  order: number
+  updatedAt?: string | null
+  lessons: CourseModuleLesson[]
 }
 
 export type CourseOverviewDetail = {
   course: {
-    id: number;
-    title: string;
-    description?: string | null;
-    thumbnail?: string | null;
-    price: number;
-    difficulty?: string | null;
-    duration?: number | null;
-    moduleCount?: number | null;
-    category?: string | null;
-    viewCount?: number | null;
-    purchaseCount?: number | null;
-    rating?: number | null;
-    updatedAt?: string | null;
-  };
-  modules: CourseModule[];
+    id: number
+    title: string
+    description?: string | null
+    thumbnail?: string | null
+    price: number
+    difficulty?: string | null
+    duration?: number | null
+    moduleCount?: number | null
+    category?: string | null
+    viewCount?: number | null
+    purchaseCount?: number | null
+    rating?: number | null
+    createdAt?: string | null
+    updatedAt?: string | null
+  }
+  modules: CourseModule[]
 }
 
-export type AssignmentQuestion = {
-  question: string;
-  options: string[];
-  correct: number;
-};
-
 export type CourseLearningLesson = {
-  id: number;
-  title: string;
-  description?: string | null;
-  order: number;
-  contentType?: string | null;
-  durationMinutes?: number | null;
-  isCompleted: boolean;
-  score?: number | null;
+  id: number
+  title: string
+  description?: string | null
+  order: number
+  contentType?: string | null
+  durationMinutes?: number | null
+  isCompleted: boolean
+  score?: number | null
   content: {
-    articleText?: string | null;
-    videoUrl?: string | null;
-    videoDuration?: number | null;
-    assignmentQuestions: AssignmentQuestion[];
-    passingScore: number;
-  };
-};
+    articleText?: string | null
+    videoUrl?: string | null
+    videoDuration?: number | null
+    assignmentQuestions: AssignmentQuestion[]
+    passingScore: number
+  }
+}
 
 export type CourseLearningModule = {
-  id: number;
-  title: string;
-  description?: string | null;
-  order: number;
-  lessons: CourseLearningLesson[];
-};
+  id: number
+  title: string
+  description?: string | null
+  order: number
+  lessons: CourseLearningLesson[]
+}
 
 export type CourseLearningDetail = {
   course: {
-    id: number;
-    title: string;
-    description?: string | null;
-    thumbnail?: string | null;
-    difficulty?: string | null;
-    duration?: number | null;
-    moduleCount?: number | null;
-  };
-  modules: CourseLearningModule[];
+    id: number
+    title: string
+    description?: string | null
+    thumbnail?: string | null
+    difficulty?: string | null
+    duration?: number | null
+    moduleCount?: number | null
+  }
+  modules: CourseLearningModule[]
   progress: {
-    completedLessons: number;
-    totalLessons: number;
-    percent: number;
-  };
+    completedLessons: number
+    totalLessons: number
+    percent: number
+  }
 }
 
-type CoursesOverviewResponse = {
-  success: boolean;
-  data: {
-    courses: CourseOverview[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-  };
+export type CourseReview = {
+  id: number
+  userId: number
+  username: string
+  rating: number
+  comment: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type AdminCourseLessonPayload = {
+  title: string
+  description?: string | null
+  order?: number
+  contentType: 'article' | 'video' | 'assignment'
+  durationMinutes?: number
+  content?: {
+    articleText?: string | null
+    videoUrl?: string | null
+    videoDuration?: number | null
+    assignmentQuestions?: AssignmentQuestion[]
+    passingScore?: number
+  }
+}
+
+export type AdminCourseModulePayload = {
+  title: string
+  description?: string | null
+  order?: number
+  lessons?: AdminCourseLessonPayload[]
+}
+
+export type AdminCoursePayload = {
+  title: string
+  description?: string | null
+  thumbnail?: string | null
+  price?: number
+  difficulty?: 'beginner' | 'intermediate' | 'advanced'
+  duration?: number
+  category?: string | null
+  modules?: AdminCourseModulePayload[]
 }
 
 type CourseQueryParams = {
-  search?: string;
-  sortBy?: 'price' | 'newest' | 'rating' | 'popular';
-  page?: number;
-  limit?: number;
+  search?: string
+  sortBy?: 'price' | 'newest' | 'rating' | 'popular'
+  page?: number
+  limit?: number
+}
+
+type CoursesOverviewResponse = {
+  success: boolean
+  data: {
+    courses: CourseOverview[]
+    pagination: {
+      page: number
+      limit: number
+      total: number
+      totalPages: number
+    }
+  }
+}
+
+type CourseOverviewDetailResponse = {
+  success: boolean
+  data: CourseOverviewDetail
+}
+
+type CourseLearningDetailResponse = {
+  success: boolean
+  data: CourseLearningDetail
+}
+
+type AssignmentSubmitResponse = {
+  success: boolean
+  data: {
+    score: number
+    passed: boolean
+    passingScore: number
+    learning: CourseLearningDetail
+  }
+}
+
+type AdminCourseMutationResponse = {
+  success: boolean
+  data: CourseOverviewDetail
+  message?: string
+}
+
+type BasicResponse = {
+  success: boolean
+  message?: string
+}
+
+type CourseReviewsResponse = {
+  success: boolean
+  data: {
+    summary: {
+      rating: number
+      count: number
+    }
+    canReview: boolean
+    myReview: CourseReview | null
+    reviews: CourseReview[]
+  }
 }
 
 export async function fetchCourses(params?: CourseQueryParams): Promise<{
-  courses: CourseOverview[];
+  courses: CourseOverview[]
   pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
 }> {
   const queryParams = new URLSearchParams()
   if (params?.search) queryParams.append('search', params.search)
   if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
   if (params?.page) queryParams.append('page', params.page.toString())
   if (params?.limit) queryParams.append('limit', params.limit.toString())
-
   const queryString = queryParams.toString()
   const path = `/courses${queryString ? `?${queryString}` : ''}`
-
   const res = await apiGet<CoursesOverviewResponse>(path)
-
-  return {
-    courses: res.data.courses,
-    pagination: res.data.pagination
-  }
-}
-
-type CourseOverviewDetailResponse = {
-  success: boolean;
-  data: CourseOverviewDetail;
-}
-
-type CourseLearningDetailResponse = {
-  success: boolean;
-  data: CourseLearningDetail;
-}
-
-type AssignmentSubmitResponse = {
-  success: boolean;
-  data: {
-    score: number;
-    passed: boolean;
-    passingScore: number;
-    learning: CourseLearningDetail;
-  };
+  return { courses: res.data.courses, pagination: res.data.pagination }
 }
 
 export async function fetchCourseOverviewDetail(id: number): Promise<CourseOverviewDetail> {
   const res = await apiGet<CourseOverviewDetailResponse>(`/courses/${id}`)
+  return res.data
+}
+
+export async function fetchAdminCourseDetail(id: number): Promise<CourseOverviewDetail> {
+  const res = await apiGet<CourseOverviewDetailResponse>(`/courses/${id}/admin`, true)
   return res.data
 }
 
@@ -176,12 +252,10 @@ type PurchasesResponse = {
   data: { courseIds: number[] }
 }
 
-/** Course IDs the signed-in user has already purchased. Returns [] when not authenticated or on error. */
 export async function fetchPurchasedCourseIds(): Promise<number[]> {
   try {
     const res = await apiGet<PurchasesResponse>('/courses/me/purchases', true)
-    const ids = res.data.courseIds ?? []
-    return ids.map((n) => Number(n))
+    return (res.data.courseIds ?? []).map((n) => Number(n))
   } catch {
     return []
   }
@@ -192,16 +266,8 @@ export async function fetchCourseLearningDetail(id: number): Promise<CourseLearn
   return res.data
 }
 
-export async function updateLessonProgress(
-  courseId: number,
-  lessonId: number,
-  isCompleted: boolean
-): Promise<CourseLearningDetail> {
-  const res = await apiPut<CourseLearningDetailResponse>(
-    `/courses/${courseId}/lessons/${lessonId}/progress`,
-    { isCompleted },
-    true
-  )
+export async function updateLessonProgress(courseId: number, lessonId: number, isCompleted: boolean): Promise<CourseLearningDetail> {
+  const res = await apiPut<CourseLearningDetailResponse>(`/courses/${courseId}/lessons/${lessonId}/progress`, { isCompleted }, true)
   return res.data
 }
 
@@ -210,188 +276,62 @@ export async function submitAssignment(
   lessonId: number,
   answers: number[]
 ): Promise<{ score: number; passed: boolean; passingScore: number; learning: CourseLearningDetail }> {
-  const res = await apiPost<AssignmentSubmitResponse>(
-    `/courses/${courseId}/lessons/${lessonId}/assignment/submit`,
-    { answers },
-    true
-  )
+  const res = await apiPost<AssignmentSubmitResponse>(`/courses/${courseId}/lessons/${lessonId}/assignment/submit`, { answers }, true)
   return res.data
 }
 
-// Helper function to extract YouTube video ID from URL
-function extractYouTubeVideoId(videoUrl?: string | null): string {
-  if (!videoUrl) return ''
-
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-    /youtube\.com\/.*[?&]v=([^&\n?#]+)/
-  ]
-
-  for (const pattern of patterns) {
-    const match = videoUrl.match(pattern)
-    if (match && match[1]) {
-      return match[1]
-    }
-  }
-
-  return videoUrl
+export async function createCourse(payload: AdminCoursePayload): Promise<CourseOverviewDetail> {
+  const res = await apiPost<AdminCourseMutationResponse>('/courses', payload, true)
+  if (!res.success || !res.data) throw new Error(res.message || 'Failed to create course')
+  return res.data
 }
 
-// Transform API recipe to frontend format
-function transformRecipe(apiRecipe: any): Recipe {
-  const videoUrl = apiRecipe.videoUrl || apiRecipe.youtubeVideoId || ''
-  const youtubeVideoId = extractYouTubeVideoId(videoUrl)
-
-  return {
-    ...apiRecipe,
-    youtubeVideoId,
-    isForSale: apiRecipe.price > 0,
-    difficulty: apiRecipe.difficulty
-      ? apiRecipe.difficulty.charAt(0).toUpperCase() + apiRecipe.difficulty.slice(1)
-      : apiRecipe.difficulty
-  }
+export async function updateCourse(id: number, payload: AdminCoursePayload): Promise<CourseOverviewDetail> {
+  const res = await apiPut<AdminCourseMutationResponse>(`/courses/${id}`, payload, true)
+  if (!res.success || !res.data) throw new Error(res.message || 'Failed to update course')
+  return res.data
 }
 
-type RecipesOverviewResponse = {
-  success: boolean;
-  data: {
-    recipes: Recipe[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
-  };
+export async function deleteCourse(id: number): Promise<void> {
+  const res = await apiDelete<BasicResponse>(`/courses/${id}`, true)
+  if (!res.success) throw new Error(res.message || 'Failed to delete course')
 }
 
-type RecipeDetailResponse = {
-  success: boolean;
-  data: Recipe | null;
-}
-
-type RecipeQueryParams = {
-  search?: string;
-  difficulty?: 'easy' | 'medium' | 'hard';
-  cookingTime?: '<30' | '30-60' | '60-120' | '>120';
-  sortBy?: 'price' | 'newest' | 'rating' | 'popular';
-  page?: number;
-  limit?: number;
-}
-
-export async function fetchRecipes(
-  params?: RecipeQueryParams,
-  options?: {
-    requireAuth?: boolean
-  }
-): Promise<{
-  recipes: Recipe[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}> {
-  const requireAuth = options?.requireAuth ?? false
-  const queryParams = new URLSearchParams()
-  if (params?.search) queryParams.append('search', params.search)
-  if (params?.difficulty) queryParams.append('difficulty', params.difficulty)
-  if (params?.cookingTime) queryParams.append('cookingTime', params.cookingTime)
-  if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
-  if (params?.page) queryParams.append('page', params.page.toString())
-  if (params?.limit) queryParams.append('limit', params.limit.toString())
-
-  const queryString = queryParams.toString()
-  const path = `/recipes${queryString ? `?${queryString}` : ''}`
-
-  const res = await apiGet<RecipesOverviewResponse>(path, requireAuth)
-  const transformedRecipes = res.data.recipes.map(transformRecipe)
-
-  return {
-    recipes: transformedRecipes,
-    pagination: res.data.pagination
-  }
-}
-
-export async function fetchRecipeById(id: number, requireAuth = false): Promise<Recipe | null> {
-  const res = await apiGet<RecipeDetailResponse>(`/recipes/${id}`, requireAuth)
-  if (!res.data) return null
-
-  return transformRecipe(res.data)
-}
-
-type RecipeMutationResponse = {
-  success: boolean
-  data: Recipe
-  message?: string
-}
-
-type BasicResponse = {
-  success: boolean
-  message?: string
-}
-
-export async function createRecipe(payload: unknown): Promise<Recipe> {
-  const res = await apiPost<RecipeMutationResponse>('/recipes', payload, true)
-  if (!res.success || !res.data) {
-    throw new Error(res.message || 'Failed to create recipe')
-  }
-  return transformRecipe(res.data)
-}
-
-export async function updateRecipe(id: number, payload: unknown): Promise<Recipe> {
-  const res = await apiPut<RecipeMutationResponse>(`/recipes/${id}`, payload, true)
-  if (!res.success || !res.data) {
-    throw new Error(res.message || 'Failed to update recipe')
-  }
-  return transformRecipe(res.data)
-}
-
-export async function deleteRecipe(id: number): Promise<void> {
-  const res = await apiDelete<BasicResponse>(`/recipes/${id}`, true)
-  if (!res.success) {
-    throw new Error(res.message || 'Failed to delete recipe')
-  }
-}
-
-export async function uploadRecipeThumbnail(id: number, file: File): Promise<Recipe> {
+export async function uploadCourseThumbnail(id: number, file: File): Promise<void> {
   const formData = new FormData()
   formData.append('image', file)
-  formData.append('recipeId', id.toString())
-
-  const res = await apiPostFormData<RecipeMutationResponse>('/images/recipe-thumbnail', formData, true)
-  if (!res.success || !res.data) {
-    throw new Error(res.message || 'Failed to update recipe thumbnail')
-  }
-  return transformRecipe(res.data)
+  formData.append('courseId', id.toString())
+  const res = await apiPostFormData<{ success: boolean; message?: string }>('/images/course-thumbnail', formData, true)
+  if (!res.success) throw new Error(res.message || 'Failed to update course thumbnail')
 }
 
-export async function fetchMyRecipes(params?: RecipeQueryParams): Promise<{
-  recipes: Recipe[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}> {
-  const queryParams = new URLSearchParams()
-  if (params?.search) queryParams.append('search', params.search)
-  if (params?.difficulty) queryParams.append('difficulty', params.difficulty)
-  if (params?.cookingTime) queryParams.append('cookingTime', params.cookingTime)
-  if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
-  if (params?.page) queryParams.append('page', params.page.toString())
-  if (params?.limit) queryParams.append('limit', params.limit.toString())
+export async function fetchCourseReviews(id: number): Promise<CourseReviewsResponse['data']> {
+  const requireAuth = Boolean(getUserSession()?.token)
+  const res = await apiGet<CourseReviewsResponse>(`/courses/${id}/reviews`, requireAuth)
+  return res.data
+}
 
-  const queryString = queryParams.toString()
-  const path = `/recipes/my-recipes${queryString ? `?${queryString}` : ''}`
+export async function saveCourseReview(id: number, rating: number, comment: string): Promise<CourseReview> {
+  const res = await apiPost<{ success: boolean; data: CourseReview; message?: string }>(
+    `/courses/${id}/reviews`,
+    { rating, comment },
+    true
+  )
+  if (!res.success || !res.data) throw new Error(res.message || 'Failed to save review')
+  return res.data
+}
 
-  const res = await apiGet<RecipesOverviewResponse>(path, true)
-  const transformedRecipes = res.data.recipes.map(transformRecipe)
+export async function updateCourseReview(id: number, rating: number, comment: string): Promise<CourseReview> {
+  const res = await apiPut<{ success: boolean; data: CourseReview; message?: string }>(
+    `/courses/${id}/reviews`,
+    { rating, comment },
+    true
+  )
+  if (!res.success || !res.data) throw new Error(res.message || 'Failed to update review')
+  return res.data
+}
 
-  return {
-    recipes: transformedRecipes,
-    pagination: res.data.pagination
-  }
+export async function deleteCourseReview(id: number): Promise<void> {
+  const res = await apiDelete<BasicResponse>(`/courses/${id}/reviews`, true)
+  if (!res.success) throw new Error(res.message || 'Failed to delete review')
 }

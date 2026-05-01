@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { fetchCourseOverviewDetail, fetchPurchasedCourseIds, type CourseOverviewDetail } from '../services/courses'
+import {
+  fetchCourseOverviewDetail,
+  fetchPurchasedCourseIds,
+  fetchCourseReviews,
+  saveCourseReview,
+  updateCourseReview,
+  deleteCourseReview,
+  type CourseOverviewDetail,
+  type CourseReview
+} from '../services/courses'
 import { addToCart } from '../services/cart'
 import { getUserSession } from '../services/auth'
 
@@ -11,6 +20,14 @@ function CourseDetail() {
   const [loading, setLoading] = useState(true)
   const [ownsCourse, setOwnsCourse] = useState(false)
   const [addingToCart, setAddingToCart] = useState(false)
+  const [reviews, setReviews] = useState<CourseReview[]>([])
+  const [reviewSummary, setReviewSummary] = useState({ rating: 0, count: 0 })
+  const [myReview, setMyReview] = useState<CourseReview | null>(null)
+  const [canReview, setCanReview] = useState(false)
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewComment, setReviewComment] = useState('')
+  const [savingReview, setSavingReview] = useState(false)
+  const [deletingReview, setDeletingReview] = useState(false)
   const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({})
 
   useEffect(() => {
@@ -55,6 +72,34 @@ function CourseDetail() {
     }
   }, [detail?.course.id])
 
+  useEffect(() => {
+    if (!detail?.course?.id) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const response = await fetchCourseReviews(detail.course.id)
+        if (cancelled) return
+        setReviews(response.reviews || [])
+        setReviewSummary(response.summary || { rating: 0, count: 0 })
+        setCanReview(Boolean(response.canReview))
+        setMyReview(response.myReview || null)
+        if (response.myReview) {
+          setReviewRating(response.myReview.rating)
+          setReviewComment(response.myReview.comment || '')
+        } else {
+          setReviewRating(5)
+          setReviewComment('')
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load course reviews', error)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [detail?.course?.id])
+
   const handleAddToCart = async () => {
     if (!detail?.course.id) return
     if (!getUserSession()) {
@@ -75,6 +120,53 @@ function CourseDetail() {
       window.alert(e instanceof Error ? e.message : 'Could not add to cart.')
     } finally {
       setAddingToCart(false)
+    }
+  }
+
+  const refreshReviews = async () => {
+    if (!detail?.course?.id) return
+    const response = await fetchCourseReviews(detail.course.id)
+    setReviews(response.reviews || [])
+    setReviewSummary(response.summary || { rating: 0, count: 0 })
+    setCanReview(Boolean(response.canReview))
+    setMyReview(response.myReview || null)
+    if (response.myReview) {
+      setReviewRating(response.myReview.rating)
+      setReviewComment(response.myReview.comment || '')
+    } else {
+      setReviewRating(5)
+      setReviewComment('')
+    }
+  }
+
+  const handleSaveReview = async () => {
+    if (!detail?.course?.id) return
+    try {
+      setSavingReview(true)
+      if (myReview) {
+        await updateCourseReview(detail.course.id, reviewRating, reviewComment)
+      } else {
+        await saveCourseReview(detail.course.id, reviewRating, reviewComment)
+      }
+      await refreshReviews()
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Failed to save review')
+    } finally {
+      setSavingReview(false)
+    }
+  }
+
+  const handleDeleteReview = async () => {
+    if (!detail?.course?.id || !myReview) return
+    if (!window.confirm('Delete your review for this course?')) return
+    try {
+      setDeletingReview(true)
+      await deleteCourseReview(detail.course.id)
+      await refreshReviews()
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Failed to delete review')
+    } finally {
+      setDeletingReview(false)
     }
   }
 
@@ -155,7 +247,7 @@ function CourseDetail() {
                 <i className="fas fa-layer-group"></i> {course.moduleCount || 0} modules
               </span>
               {course.difficulty && (
-                <span className={`recipe-difficulty difficulty-${course.difficulty.toLowerCase()}`}>
+                <span className="course-hero-pill">
                   <i className="fas fa-signal"></i> {course.difficulty}
                 </span>
               )}
@@ -168,19 +260,19 @@ function CourseDetail() {
                 <i className="fas fa-calendar"></i> Updated {formatDate(course.updatedAt)}
               </span>
             </div>
-            {course.rating !== null && course.rating !== undefined && (
-              <div className="recipe-rating">
+            <div className="recipe-rating course-hero-rating">
                 <div className="stars">
-                  {Array.from({ length: 5 }).map((_, idx) => (
+                {Array.from({ length: 5 }).map((_, idx) => (
                     <i
                       key={idx}
-                      className={idx < Math.floor(course.rating || 0) ? 'fas fa-star' : 'far fa-star'}
+                    className={idx < Math.floor(reviewSummary.rating || course.rating || 0) ? 'fas fa-star' : 'far fa-star'}
                     />
                   ))}
                 </div>
-                <span className="rating-text">({(course.rating || 0).toFixed(1)})</span>
+              <span className="rating-text">
+                {(reviewSummary.rating || course.rating || 0).toFixed(1)} ({reviewSummary.count} reviews)
+              </span>
               </div>
-            )}
             <p className="course-hero-description">
               {course.description || 'No description provided.'}
             </p>
@@ -289,6 +381,83 @@ function CourseDetail() {
               })}
             </div>
           )}
+
+          <div className={`module-card ${!canReview ? 'review-disabled' : ''}`} style={{ marginTop: '1rem' }}>
+            <div className="module-body">
+              <h3 className="review-section-title">Ratings & Reviews</h3>
+              <p className="module-subtitle" style={{ marginBottom: '0.75rem' }}>
+                Average {reviewSummary.rating.toFixed(1)} from {reviewSummary.count} review{reviewSummary.count !== 1 ? 's' : ''}.
+              </p>
+
+              <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1rem' }}>
+                <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>Your Rating</label>
+                <div style={{ display: 'flex', gap: '0.25rem' }}>
+                  {Array.from({ length: 5 }).map((_, idx) => {
+                    const star = idx + 1
+                    return (
+                      <button
+                        key={star}
+                        type="button"
+                        className="btn btn-outline btn-small"
+                        disabled={!canReview || savingReview || deletingReview}
+                        onClick={() => setReviewRating(star)}
+                        style={{ minWidth: '2.2rem', padding: '0.25rem 0.45rem', opacity: reviewRating >= star ? 1 : 0.55 }}
+                      >
+                        <i className="fas fa-star"></i>
+                      </button>
+                    )
+                  })}
+                </div>
+                <label htmlFor="course-review-comment" style={{ fontSize: '0.9rem', fontWeight: 600 }}>Your Comment</label>
+                <textarea
+                  id="course-review-comment"
+                  className="form-control review-textarea"
+                  rows={3}
+                  placeholder={canReview ? 'Share your learning experience…' : 'Purchase this course to leave a review.'}
+                  value={reviewComment}
+                  disabled={!canReview || savingReview || deletingReview}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                />
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={!canReview || savingReview || deletingReview}
+                    onClick={handleSaveReview}
+                  >
+                    {savingReview ? 'Saving…' : (myReview ? 'Update Review' : 'Submit Review')}
+                  </button>
+                  {myReview && (
+                    <button
+                      type="button"
+                      className="btn btn-outline"
+                      disabled={deletingReview || savingReview}
+                      onClick={handleDeleteReview}
+                    >
+                      {deletingReview ? 'Deleting…' : 'Delete Review'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="lesson-list">
+                {reviews.length === 0 ? (
+                  <p className="module-subtitle" style={{ margin: 0 }}>No reviews yet.</p>
+                ) : (
+                  reviews.map((review) => (
+                    <div className="lesson-item" key={review.id}>
+                      <h4>{review.username}</h4>
+                      <div className="lesson-meta" style={{ marginBottom: '0.35rem' }}>
+                        <span><i className="fas fa-star"></i> {review.rating}/5</span>
+                        <span><i className="fas fa-calendar"></i> {formatDate(review.updatedAt)}</span>
+                      </div>
+                      <p>{review.comment || 'No comment provided.'}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </main>

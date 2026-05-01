@@ -17,7 +17,6 @@ interface Order {
   paymentMethod?: string | null
   paymentProof?: string | null
   createdAt: string
-  adminNotes?: string | null
   items: OrderItem[]
 }
 
@@ -53,7 +52,6 @@ function MyOrders() {
         paymentMethod: transaction.paymentMethod,
         paymentProof: transaction.paymentProof,
         createdAt: transaction.createdAt,
-        adminNotes: transaction.adminNotes,
         items: (transaction.courses?.length ? transaction.courses : transaction.recipes || []).map((r: { recipeId?: number; courseId?: number; title: string; price: number; videoThumbnail?: string | null; thumbnail?: string | null }) => ({
           recipeId: r.courseId ?? r.recipeId ?? 0,
           title: r.title,
@@ -119,7 +117,7 @@ function MyOrders() {
         <section className="page-header">
           <div className="container">
             <h1 className="page-title">My Orders</h1>
-            <p className="page-subtitle">Track and manage your video recipe purchases</p>
+            <p className="page-subtitle">Track and manage your course purchases</p>
           </div>
         </section>
 
@@ -139,7 +137,7 @@ function MyOrders() {
         <section className="page-header">
           <div className="container">
             <h1 className="page-title">My Orders</h1>
-            <p className="page-subtitle">Track and manage your video recipe purchases</p>
+            <p className="page-subtitle">Track and manage your course purchases</p>
           </div>
         </section>
 
@@ -162,7 +160,7 @@ function MyOrders() {
       <section className="page-header">
         <div className="container">
           <h1 className="page-title">My Orders</h1>
-          <p className="page-subtitle">Track and manage your video recipe purchases</p>
+          <p className="page-subtitle">Track and manage your course purchases</p>
         </div>
       </section>
 
@@ -204,12 +202,12 @@ function MyOrders() {
               <h3>No orders found</h3>
               <p>
                 {filter === 'all'
-                  ? "You haven't made any purchases yet. Start exploring our video recipes!"
+                  ? "You haven't made any purchases yet. Start exploring our courses!"
                   : `No ${filter} orders found.`
                 }
               </p>
-              <Link to="/recipes" className="btn btn-primary">
-                Browse Recipes
+              <Link to="/courses" className="btn btn-primary">
+                Browse Courses
               </Link>
             </div>
           ) : (
@@ -244,7 +242,7 @@ function MyOrders() {
                 </div>
 
                 <div className="order-items">
-                  <h4>Purchased Items ({order.items.length})</h4>
+                  <h4>Purchased Courses ({order.items.length})</h4>
                   <div className="items-grid">
                     {order.items.map(item => (
                       <div key={item.recipeId} className="order-item">
@@ -254,39 +252,12 @@ function MyOrders() {
                             <span className="item-price">${item.price.toFixed(2)}</span>
                           </div>
                         </div>
-                        <div className="item-actions">
-                          {order.status === 'verified' ? (
-                            <Link
-                              to={`/recipe-detail/${item.recipeId}`}
-                              className="btn btn-primary btn-small"
-                            >
-                              <i className="fas fa-play"></i> Watch
-                            </Link>
-                          ) : (
-                            <button
-                              className="btn btn-outline btn-small"
-                              disabled
-                            >
-                              <i className="fas fa-lock"></i> Locked
-                            </button>
-                          )}
-                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="order-actions">
-                  {order.status === 'verified' && order.items.length > 0 && (
-                    <div className="action-group">
-                      <Link
-                        to={`/recipe-detail/${order.items[0].recipeId}`}
-                        className="btn btn-primary"
-                      >
-                        <i className="fas fa-play"></i> Watch
-                      </Link>
-                    </div>
-                  )}
                   {order.status === 'pending' && (
                     <div className="action-group">
                       {!order.paymentProof ? (
@@ -308,7 +279,7 @@ function MyOrders() {
                     <div className="action-group">
                       <p className="rejected-message">
                         <i className="fas fa-exclamation-circle"></i>
-                        {order.adminNotes || 'Payment was rejected. Please contact support.'}
+                        Payment was rejected. Please contact support.
                       </p>
                     </div>
                   )}

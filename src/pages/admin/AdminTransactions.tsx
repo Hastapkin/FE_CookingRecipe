@@ -10,8 +10,6 @@ function AdminTransactions() {
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('pending')
   const [processingId, setProcessingId] = useState<number | null>(null)
-  const [rejectNote, setRejectNote] = useState<string>('')
-  const [showRejectModal, setShowRejectModal] = useState<number | null>(null)
   const [showDetailModal, setShowDetailModal] = useState<number | null>(null)
   const [transactionDetail, setTransactionDetail] = useState<Transaction | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
@@ -69,7 +67,7 @@ function AdminTransactions() {
   }
 
   const handleVerify = async (transactionId: number) => {
-    if (!confirm('Are you sure you want to verify this transaction? This will grant the user access to purchased recipes.')) {
+    if (!confirm('Are you sure you want to verify this transaction? This will grant the user access to purchased courses.')) {
       return
     }
 
@@ -88,18 +86,15 @@ function AdminTransactions() {
   }
 
   const handleReject = async (transactionId: number) => {
-    if (!rejectNote.trim()) {
-      alert('Please provide a reason for rejection.')
+    if (!confirm('Are you sure you want to reject this transaction?')) {
       return
     }
 
     try {
       setProcessingId(transactionId)
-      await rejectTransaction(transactionId, rejectNote.trim())
+      await rejectTransaction(transactionId)
       // Reload transactions
       await loadTransactions()
-      setShowRejectModal(null)
-      setRejectNote('')
       alert('Transaction rejected successfully!')
     } catch (error) {
       console.error('Failed to reject transaction:', error)
@@ -271,7 +266,7 @@ function AdminTransactions() {
                             </button>
                             <button
                               className="btn btn-outline btn-small"
-                              onClick={() => setShowRejectModal(transaction.id)}
+                              onClick={() => handleReject(transaction.id)}
                               disabled={processingId === transaction.id}
                               title="Reject transaction"
                             >
@@ -444,20 +439,6 @@ function AdminTransactions() {
                     </div>
                   )}
 
-                  {/* Admin Notes */}
-                  {transactionDetail.adminNotes && (
-                    <div>
-                      <h4 style={{ marginBottom: '12px', color: '#333' }}>Admin Notes</h4>
-                      <div style={{ 
-                        padding: '12px', 
-                        backgroundColor: '#f8f9fa', 
-                        borderRadius: '8px',
-                        border: '1px solid #ddd'
-                      }}>
-                        <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{transactionDetail.adminNotes}</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="error-message">
@@ -481,57 +462,6 @@ function AdminTransactions() {
         </div>
       )}
 
-      {/* Reject Modal */}
-      {showRejectModal && (
-        <div className="modal-overlay" onClick={() => {
-          setShowRejectModal(null)
-          setRejectNote('')
-        }}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Reject Transaction #{showRejectModal}</h3>
-              <button
-                className="modal-close"
-                onClick={() => {
-                  setShowRejectModal(null)
-                  setRejectNote('')
-                }}
-              >
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-            <div className="modal-body">
-              <p>Please provide a reason for rejecting this transaction:</p>
-              <textarea
-                className="form-control"
-                rows={4}
-                value={rejectNote}
-                onChange={(e) => setRejectNote(e.target.value)}
-                placeholder="Enter rejection reason..."
-                style={{ width: '100%', marginTop: '12px' }}
-              />
-            </div>
-            <div className="modal-footer">
-              <button
-                className="btn btn-outline"
-                onClick={() => {
-                  setShowRejectModal(null)
-                  setRejectNote('')
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => handleReject(showRejectModal)}
-                disabled={!rejectNote.trim() || processingId === showRejectModal}
-              >
-                {processingId === showRejectModal ? 'Rejecting...' : 'Reject Transaction'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   )
 }

@@ -142,7 +142,7 @@ function Layout() {
                 <>
                   <li className="nav-item">
                     <NavLink
-                      to="/admin/recipes"
+                      to="/admin/courses"
                       end
                       className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
                       onClick={() => {
@@ -152,12 +152,12 @@ function Layout() {
                       }}
                     >
                       <i className="fas fa-book-open"></i>
-                      <span>Recipes</span>
+                      <span>Courses</span>
                     </NavLink>
                   </li>
                   <li className="nav-item">
                     <NavLink
-                      to="/admin/recipes/new"
+                      to="/admin/courses/new"
                       className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
                       onClick={() => {
                         setMobileMenuOpen(false)
@@ -166,7 +166,7 @@ function Layout() {
                       }}
                     >
                       <i className="fas fa-plus-circle"></i>
-                      <span>Add Recipe</span>
+                      <span>Add Course</span>
                     </NavLink>
                   </li>
                   <li className="nav-item">
@@ -388,7 +388,7 @@ function Layout() {
                             <span className="dropdown-username">{currentUser.username}</span>
                           </div>
                           <NavLink 
-                            to="/my-recipes" 
+                            to="/my-courses" 
                             className="dropdown-item"
                             onClick={() => {
                               setUserDropdownOpen(false)
@@ -396,7 +396,7 @@ function Layout() {
                             }}
                           >
                             <i className="fas fa-book"></i>
-                            <span>My Recipes</span>
+                            <span>My Courses</span>
                           </NavLink>
                           <NavLink 
                             to="/profile-picture" 

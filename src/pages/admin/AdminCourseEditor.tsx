@@ -1,27 +1,48 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { createRecipe, fetchRecipeById, updateRecipe } from '../../services/courses'
-import type { Recipe } from '../../types/course'
+import {
+  createCourse,
+  fetchAdminCourseDetail,
+  updateCourse,
+  type AdminCoursePayload,
+  type CourseOverviewDetail
+} from '../../services/courses'
 
-function sanitizeRecipeForEditing(recipe: Recipe): Record<string, unknown> {
-  const {
-    youtubeVideoId,
-    isForSale,
-    createdAt,
-    rating,
-    totalRatings,
-    viewCount,
-    purchaseCount,
-    ...rest
-  } = recipe
-
-  return JSON.parse(JSON.stringify(rest)) as Record<string, unknown>
+function sanitizeCourseForEditing(detail: CourseOverviewDetail): AdminCoursePayload {
+  return {
+    title: detail.course.title || '',
+    description: detail.course.description || '',
+    thumbnail: detail.course.thumbnail || '',
+    price: Number(detail.course.price || 0),
+    difficulty: (detail.course.difficulty?.toLowerCase() as AdminCoursePayload['difficulty']) || 'beginner',
+    duration: Number(detail.course.duration || 0),
+    category: detail.course.category || '',
+    modules: (detail.modules || []).map((module) => ({
+      title: module.title,
+      description: module.description || '',
+      order: module.order,
+      lessons: (module.lessons || []).map((lesson) => ({
+        title: lesson.title,
+        description: lesson.description || '',
+        order: lesson.order,
+        contentType: (lesson.contentType?.toLowerCase() as 'article' | 'video' | 'assignment') || 'article',
+        durationMinutes: Number(lesson.durationMinutes || 0),
+        content: {
+          articleText: lesson.contentType?.toLowerCase() === 'article' ? (lesson as any).content?.articleText || '' : null,
+          videoUrl: lesson.contentType?.toLowerCase() === 'video' ? (lesson as any).content?.videoUrl || '' : null,
+          videoDuration: lesson.contentType?.toLowerCase() === 'video' ? Number((lesson as any).content?.videoDuration || 0) : null,
+          assignmentQuestions: lesson.contentType?.toLowerCase() === 'assignment' ? ((lesson as any).content?.assignmentQuestions || []) : [],
+          passingScore: lesson.contentType?.toLowerCase() === 'assignment' ? Number((lesson as any).content?.passingScore || 70) : 70
+        }
+      }))
+    }))
+  }
 }
 
-function AdminRecipeEditor() {
+function AdminCourseEditor() {
   const { id } = useParams<{ id: string }>()
-  const recipeId = id ? Number(id) : null
-  const isEdit = Boolean(recipeId)
+  const courseId = id ? Number(id) : null
+  const isEdit = Boolean(courseId)
   const navigate = useNavigate()
 
   const [jsonInput, setJsonInput] = useState('')
@@ -30,43 +51,54 @@ function AdminRecipeEditor() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isEdit && recipeId) {
-      const loadRecipe = async () => {
+    if (isEdit && courseId) {
+      const loadCourse = async () => {
         try {
           setLoading(true)
           setError(null)
-          const data = await fetchRecipeById(recipeId, true)
-          if (!data) {
-            setError('Recipe not found')
-            return
-          }
-          const payload = sanitizeRecipeForEditing(data)
+          const data = await fetchAdminCourseDetail(courseId)
+          const payload = sanitizeCourseForEditing(data)
           setJsonInput(JSON.stringify(payload, null, 2))
         } catch (err) {
-          console.error('Failed to load recipe', err)
-          setError('Failed to load recipe. Please try again later.')
+          console.error('Failed to load course', err)
+          setError('Failed to load course. Please try again later.')
         } finally {
           setLoading(false)
         }
       }
 
-      loadRecipe()
+      loadCourse()
     } else {
       setJsonInput(`{
   "title": "",
   "description": "",
-  "videoUrl": "",
+  "thumbnail": "",
   "price": 0,
-  "difficulty": "easy",
-  "cookingTime": 0,
-  "servings": 1,
+  "difficulty": "beginner",
+  "duration": 0,
   "category": "",
-  "ingredients": [],
-  "instructions": [],
-  "nutrition": []
+  "modules": [
+    {
+      "title": "",
+      "description": "",
+      "order": 1,
+      "lessons": [
+        {
+          "title": "",
+          "description": "",
+          "order": 1,
+          "contentType": "article",
+          "durationMinutes": 0,
+          "content": {
+            "articleText": ""
+          }
+        }
+      ]
+    }
+  ]
 }`)
     }
-  }, [isEdit, navigate, recipeId])
+  }, [isEdit, navigate, courseId])
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -74,23 +106,23 @@ function AdminRecipeEditor() {
     try {
       setSaving(true)
       setError(null)
-      const parsed = JSON.parse(jsonInput)
+      const parsed = JSON.parse(jsonInput) as AdminCoursePayload
 
-      if (isEdit && recipeId) {
-        await updateRecipe(recipeId, parsed)
-        alert('Recipe updated successfully.')
+      if (isEdit && courseId) {
+        await updateCourse(courseId, parsed)
+        alert('Course updated successfully.')
       } else {
-        await createRecipe(parsed)
-        alert('Recipe created successfully.')
+        await createCourse(parsed)
+        alert('Course created successfully.')
       }
 
-      navigate('/admin/recipes')
+      navigate('/admin/courses')
     } catch (err) {
-      console.error('Failed to save recipe', err)
+      console.error('Failed to save course', err)
       if (err instanceof SyntaxError) {
         setError('Invalid JSON format. Please check your input.')
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to save recipe. Please try again later.')
+        setError(err instanceof Error ? err.message : 'Failed to save course. Please try again later.')
       }
     } finally {
       setSaving(false)
@@ -101,9 +133,9 @@ function AdminRecipeEditor() {
     <main className="admin-page">
       <section className="page-header">
         <div className="container">
-          <h1 className="page-title">{isEdit ? 'Edit Recipe' : 'Add New Recipe'}</h1>
+          <h1 className="page-title">{isEdit ? 'Edit Course' : 'Add New Course'}</h1>
           <p className="page-subtitle">
-            {isEdit ? 'Update the recipe JSON payload and save your changes.' : 'Paste or write the recipe JSON payload, then submit to create the recipe.'}
+            {isEdit ? 'Update the course JSON payload and save your changes.' : 'Paste or write the course JSON payload, then submit to create the course.'}
           </p>
         </div>
       </section>
@@ -113,7 +145,7 @@ function AdminRecipeEditor() {
           {loading ? (
             <div className="loading-container">
               <div className="loading-spinner large"></div>
-              <p>Loading recipe data...</p>
+              <p>Loading course data...</p>
             </div>
           ) : (
             <form className="admin-recipe-editor" onSubmit={handleSubmit}>
@@ -125,7 +157,7 @@ function AdminRecipeEditor() {
               )}
 
               <label htmlFor="recipeJson" className="form-label">
-                Recipe JSON
+                Course JSON
               </label>
               <textarea
                 id="recipeJson"
@@ -140,7 +172,7 @@ function AdminRecipeEditor() {
                 <button
                   type="button"
                   className="btn btn-outline"
-                  onClick={() => navigate('/admin/recipes')}
+                  onClick={() => navigate('/admin/courses')}
                   disabled={saving}
                 >
                   Cancel
@@ -158,7 +190,7 @@ function AdminRecipeEditor() {
                   ) : (
                     <>
                       <i className="fas fa-save"></i>
-                      {isEdit ? ' Save Changes' : ' Create Recipe'}
+                      {isEdit ? ' Save Changes' : ' Create Course'}
                     </>
                   )}
                 </button>
@@ -171,4 +203,4 @@ function AdminRecipeEditor() {
   )
 }
 
-export default AdminRecipeEditor
+export default AdminCourseEditor

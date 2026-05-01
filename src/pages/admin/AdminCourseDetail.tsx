@@ -1,78 +1,74 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import type { Recipe } from '../../types/course'
-import { deleteRecipe, fetchRecipeById, uploadRecipeThumbnail } from '../../services/courses'
-import YouTubePlayer from '../../components/YouTubePlayer'
+import { deleteCourse, fetchAdminCourseDetail, uploadCourseThumbnail, type CourseOverviewDetail } from '../../services/courses'
 
-function AdminRecipeDetail() {
+function AdminCourseDetail() {
   const { id } = useParams<{ id: string }>()
-  const recipeId = id ? Number(id) : null
+  const courseId = id ? Number(id) : null
   const navigate = useNavigate()
 
-  const [recipe, setRecipe] = useState<Recipe | null>(null)
+  const [detail, setDetail] = useState<CourseOverviewDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [thumbnailUploading, setThumbnailUploading] = useState(false)
 
   useEffect(() => {
-    if (!recipeId) {
-      navigate('/admin/recipes')
+    if (!courseId) {
+      navigate('/admin/courses')
       return
     }
 
-    const loadRecipe = async () => {
+    const loadCourse = async () => {
       try {
         setLoading(true)
         setError(null)
-        const data = await fetchRecipeById(recipeId, true)
-        if (!data) {
-          setError('Recipe not found')
-        }
-        setRecipe(data)
+        const data = await fetchAdminCourseDetail(courseId)
+        setDetail(data)
       } catch (err) {
-        console.error('Failed to load recipe', err)
-        setError('Failed to load recipe details. Please try again later.')
+        console.error('Failed to load course', err)
+        setError('Failed to load course details. Please try again later.')
       } finally {
         setLoading(false)
       }
     }
 
-    loadRecipe()
-  }, [navigate, recipeId])
+    loadCourse()
+  }, [navigate, courseId])
 
   const handleDelete = async () => {
-    if (!recipeId) return
-    if (!window.confirm('Are you sure you want to delete this recipe? This action cannot be undone.')) {
+    if (!courseId) return
+    if (!window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
       return
     }
 
     try {
       setIsDeleting(true)
-      await deleteRecipe(recipeId)
-      alert('Recipe deleted successfully.')
-      navigate('/admin/recipes')
+      await deleteCourse(courseId)
+      alert('Course deleted successfully.')
+      navigate('/admin/courses')
     } catch (err) {
-      console.error('Failed to delete recipe', err)
-      alert(err instanceof Error ? err.message : 'Failed to delete recipe. Please try again later.')
+      console.error('Failed to delete course', err)
+      alert(err instanceof Error ? err.message : 'Failed to delete course. Please try again later.')
     } finally {
       setIsDeleting(false)
     }
   }
 
   const handleThumbnailUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!recipeId) return
+    if (!courseId) return
     const file = event.target.files?.[0]
     if (!file) return
 
     try {
       setThumbnailUploading(true)
-      const updated = await uploadRecipeThumbnail(recipeId, file)
-      setRecipe(updated)
-      alert('Thumbnail updated successfully.')
+      await uploadCourseThumbnail(courseId, file)
+      const refreshed = await fetchAdminCourseDetail(courseId)
+      setDetail(refreshed)
+      alert('Course image updated successfully.')
     } catch (err) {
-      console.error('Failed to update thumbnail', err)
-      alert(err instanceof Error ? err.message : 'Failed to update thumbnail. Please try again later.')
+      console.error('Failed to update course image', err)
+      alert(err instanceof Error ? err.message : 'Failed to update course image. Please try again later.')
     } finally {
       setThumbnailUploading(false)
       event.target.value = ''
@@ -84,28 +80,28 @@ function AdminRecipeDetail() {
       <main className="admin-page">
         <div className="loading-container" style={{ padding: '4rem 0' }}>
           <div className="loading-spinner large"></div>
-          <p>Loading recipe...</p>
+          <p>Loading course...</p>
         </div>
       </main>
     )
   }
 
-  if (error || !recipe) {
+  if (error || !detail) {
     return (
       <main className="admin-page">
         <section className="page-header">
           <div className="container">
-            <h1 className="page-title">Recipe Detail</h1>
-            <p className="page-subtitle">Manage recipe information</p>
+            <h1 className="page-title">Course Detail</h1>
+            <p className="page-subtitle">Manage course information</p>
           </div>
         </section>
         <section className="section">
           <div className="container">
             <div className="error-message">
               <i className="fas fa-exclamation-triangle"></i>
-              <p>{error || 'Recipe not found.'}</p>
-              <button className="btn btn-outline" onClick={() => navigate('/admin/recipes')}>
-                Back to recipes
+              <p>{error || 'Course not found.'}</p>
+              <button className="btn btn-outline" onClick={() => navigate('/admin/courses')}>
+                Back to courses
               </button>
             </div>
           </div>
@@ -114,16 +110,18 @@ function AdminRecipeDetail() {
     )
   }
 
+  const { course, modules } = detail
+
   return (
     <main className="admin-page">
       <section className="page-header">
         <div className="container">
-          <h1 className="page-title">{recipe.title}</h1>
-          <p className="page-subtitle">Manage recipe content and assets</p>
+          <h1 className="page-title">{course.title}</h1>
+          <p className="page-subtitle">Manage course content and assets</p>
           <div className="page-actions">
             <button
               className="btn btn-primary"
-              onClick={() => navigate(`/admin/recipes/${recipe.id}/edit`)}
+              onClick={() => navigate(`/admin/courses/${course.id}/edit`)}
             >
               <i className="fas fa-edit"></i>
               Edit JSON
@@ -145,7 +143,7 @@ function AdminRecipeDetail() {
             </button>
             <button
               className="btn btn-outline"
-              onClick={() => navigate('/admin/recipes')}
+              onClick={() => navigate('/admin/courses')}
             >
               <i className="fas fa-arrow-left"></i>
               Back to list
@@ -158,13 +156,17 @@ function AdminRecipeDetail() {
         <div className="container">
           <div className="admin-recipe-detail-grid">
             <div className="admin-recipe-video">
-              <YouTubePlayer
-                videoId={recipe.youtubeVideoId}
-                thumbnail={recipe.videoThumbnail ?? undefined}
-                title={recipe.title}
-                width="100%"
-                height="400px"
-              />
+              {course.thumbnail ? (
+                <img
+                  src={course.thumbnail}
+                  alt={course.title}
+                  style={{ width: '100%', borderRadius: '12px', maxHeight: '400px', objectFit: 'cover' }}
+                />
+              ) : (
+                <div style={{ borderRadius: '12px', border: '1px dashed #ccc', minHeight: '260px', display: 'grid', placeItems: 'center' }}>
+                  <span style={{ color: '#777' }}>No course image uploaded</span>
+                </div>
+              )}
               <div className="thumbnail-upload">
                 <label className="file-upload-label" style={{ width: '100%' }}>
                   <input
@@ -183,7 +185,7 @@ function AdminRecipeDetail() {
                     ) : (
                       <>
                         <i className="fas fa-image"></i>
-                        <span>Change Thumbnail</span>
+                        <span>Change Course Image</span>
                       </>
                     )}
                   </div>
@@ -195,77 +197,49 @@ function AdminRecipeDetail() {
               <div className="meta-grid">
                 <div>
                   <h4>Category</h4>
-                  <p>{recipe.category || '—'}</p>
+                  <p>{course.category || '—'}</p>
                 </div>
                 <div>
                   <h4>Difficulty</h4>
-                  <p>{recipe.difficulty || '—'}</p>
+                  <p>{course.difficulty || '—'}</p>
                 </div>
                 <div>
-                  <h4>Cooking Time</h4>
-                  <p>{recipe.cookingTime ? `${recipe.cookingTime} min` : '—'}</p>
+                  <h4>Duration</h4>
+                  <p>{course.duration ? `${course.duration} min` : '—'}</p>
                 </div>
                 <div>
-                  <h4>Servings</h4>
-                  <p>{recipe.servings || '—'}</p>
+                  <h4>Modules</h4>
+                  <p>{modules.length}</p>
                 </div>
                 <div>
                   <h4>Price</h4>
-                  <p>${recipe.price?.toFixed(2) ?? '0.00'}</p>
-                </div>
-                <div>
-                  <h4>Video URL</h4>
-                  <p>
-                    {recipe.videoUrl ? (
-                      <a href={recipe.videoUrl} target="_blank" rel="noopener noreferrer">
-                        {recipe.videoUrl}
-                      </a>
-                    ) : '—'}
-                  </p>
+                  <p>${course.price?.toFixed(2) ?? '0.00'}</p>
                 </div>
               </div>
 
               <div className="admin-recipe-description">
                 <h3>Description</h3>
-                <p>{recipe.description || 'No description provided.'}</p>
+                <p>{course.description || 'No description provided.'}</p>
               </div>
 
               <div className="admin-recipe-section">
-                <h3>Ingredients</h3>
-                <ul>
-                  {(recipe.ingredients || []).map((item, index) => (
-                    <li key={index}>
-                      <strong>{item.label}</strong>
-                      {item.quantity !== undefined && item.quantity !== null && ` - ${item.quantity}`}
-                      {item.measurement && ` ${item.measurement}`}
-                    </li>
+                <h3>Modules & Lessons</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {modules.map((module) => (
+                    <div key={module.id} style={{ border: '1px solid #eee', borderRadius: '8px', padding: '0.75rem' }}>
+                      <strong>{module.order}. {module.title}</strong>
+                      <p style={{ margin: '0.35rem 0', color: '#666' }}>{module.description || 'No description.'}</p>
+                      <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+                        {module.lessons.map((lesson) => (
+                          <li key={lesson.id}>
+                            {lesson.order}. {lesson.title} ({lesson.contentType || 'article'})
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   ))}
-                </ul>
-              </div>
-
-              <div className="admin-recipe-section">
-                <h3>Instructions</h3>
-                <ol>
-                  {(recipe.instructions || []).map((step, index) => (
-                    <li key={index}>
-                      <strong>Step {step.step ?? index + 1}:</strong> {step.content}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-
-              {recipe.nutrition && recipe.nutrition.length > 0 && (
-                <div className="admin-recipe-section">
-                  <h3>Nutrition</h3>
-                  <ul>
-                    {recipe.nutrition.map((item, index) => (
-                      <li key={index}>
-                        <strong>{item.type}:</strong> {item.quantity} {item.measurement}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -274,4 +248,4 @@ function AdminRecipeDetail() {
   )
 }
 
-export default AdminRecipeDetail
+export default AdminCourseDetail
